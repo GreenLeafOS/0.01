@@ -24,8 +24,8 @@ private:
 };
 
 /************************************************************************/
-/*                      初始化函数										*/
-/*                         Init                                         */
+/*                      初始化函数
+/*                         Init
 /************************************************************************/
 template <typename DataClass,unsigned int Max>
 void CircularQueue<DataClass,Max>::Init()
@@ -34,8 +34,8 @@ void CircularQueue<DataClass,Max>::Init()
 	tail = 0;
 }
 /************************************************************************/
-/*					       读取项										*/
-/*                          Get		                                    */
+/*					       读取项
+/*                          Get
 /************************************************************************/
 template <typename DataClass,unsigned int Max>
 Result CircularQueue<DataClass,Max>::Get(DataClass &Item)
@@ -50,8 +50,8 @@ Result CircularQueue<DataClass,Max>::Get(DataClass &Item)
 	return S_OK;
 }
 /************************************************************************/
-/*					       写入项										*/
-/*                      	Set        		                            */
+/*					       写入项
+/*                      	Set
 /************************************************************************/
 template <typename DataClass,unsigned int Max>
 Result CircularQueue<DataClass,Max>::Set(DataClass Item)

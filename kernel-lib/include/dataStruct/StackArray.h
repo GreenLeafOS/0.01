@@ -26,8 +26,8 @@ protected:
 	DataClass data[Max];	// 数据
 };
 /************************************************************************/
-/*                      初始化函数										*/
-/*                         Init                                         */
+/*                      初始化函数
+/*                         Init
 /************************************************************************/
 template <typename DataClass,unsigned int Max>
 inline void StackArray<DataClass,Max>::Init()
@@ -36,8 +36,8 @@ inline void StackArray<DataClass,Max>::Init()
 	return;
 }
 /************************************************************************/
-/*                    	   添加 											*/
-/*                         Add       	                                */
+/*                    	   添加
+/*                         Add
 /************************************************************************/
 template<typename DataClass,unsigned int Max>
 inline Result StackArray<DataClass,Max>::Add(int &ID,DataClass Item)
@@ -57,8 +57,8 @@ inline Result StackArray<DataClass,Max>::Add(DataClass Item)
 	return S_OK;
 }
 /************************************************************************/
-/*                    		删除项										*/
-/*                          Delete       	                            */
+/*                    		删除项
+/*                          Delete
 /************************************************************************/
 template<typename DataClass,unsigned int Max>
 inline Result StackArray<DataClass,Max>::Delete()
@@ -69,8 +69,8 @@ inline Result StackArray<DataClass,Max>::Delete()
 	return S_OK;
 }
 /************************************************************************/
-/*                    		获取项										*/
-/*                           Get		       	                        */
+/*                    		获取项
+/*                           Get
 /************************************************************************/
 template<typename DataClass,unsigned int Max>
 inline Result StackArray<DataClass,Max>::Get(int ID,DataClass &Item)
@@ -80,8 +80,8 @@ inline Result StackArray<DataClass,Max>::Get(int ID,DataClass &Item)
 	return S_OK;
 }
 /************************************************************************/
-/*                    		设置项										*/
-/*                           Set		       	           		        */
+/*                    		设置项
+/*                           Set
 /************************************************************************/
 template<typename DataClass,unsigned int Max>
 inline Result StackArray<DataClass,Max>::Set(int ID,DataClass Item)
@@ -91,8 +91,8 @@ inline Result StackArray<DataClass,Max>::Set(int ID,DataClass Item)
 	return S_OK;
 }
 /************************************************************************/
-/*                    	  获取项指针										*/
-/*                        GetAddr	       	                            */
+/*                    	  获取项指针
+/*                        GetAddr
 /************************************************************************/
 template<typename DataClass,unsigned int Max>
 inline Result StackArray<DataClass,Max>::GetAddr(int ID,DataClass **Item)
