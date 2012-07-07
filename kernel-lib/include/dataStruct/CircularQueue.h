@@ -14,8 +14,9 @@ public:
 	void Init();						// 初始化
 
 	Result Get(DataClass &Item);		// 读取
-	Result Set(DataClass Item);			// 写入
 
+	Result Set(DataClass Item);			// 写入
+	Result Set(DataClass *Item);		// 写入
 private:
 	DataClass data[Max];				// 数据
 
@@ -60,11 +61,20 @@ Result CircularQueue<DataClass,Max>::Set(DataClass Item)
 	if ((tail+1)%Max == head) return E_MAX;
 	// 如果尾指针加1等于上限，则把尾指针置为0，这个实现比我的高明很多啊。
 	tail = (tail + 1) % Max;		//(++tail == Max) ? 0 : tail;
-	DataClass *base = &CircularQueue<DataClass,Max>::data[0];
+	DataClass *base = &data[0];
 	*(base + tail) = Item;			// 写入
 
 	return S_OK;
 }
 
+template <typename DataClass,unsigned int Max>
+Result CircularQueue<DataClass,Max>::Set(DataClass *Item)
+{
+	if ((tail+1)%Max == head) return E_MAX;
+	tail = (tail + 1) % Max;
+	DataClass *base = &data[0];
+	*(base + tail) = *Item;
+	return S_OK;
+}
 #endif
 
