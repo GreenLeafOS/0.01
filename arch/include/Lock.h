@@ -7,7 +7,6 @@
 
 /* 保存以前的中断状态 */
 #define Kernel_Store_Flags(eflags)	\
-	unsigned int eflags;		\
 	asm volatile( 				\
 		"pushf\n\t"				\
 		"pop %0\n\t"			\
@@ -34,4 +33,12 @@
 		: "memory"				\
         );
 
-//#endif
+#define LOCK() \
+		unsigned int eflags;		\
+		Kernel_Store_Flags(eflags)	\
+		Kernel_Lock()
+
+#define UNLOCK()	\
+		Kernel_Recovery_Flags(eflags)
+
+#endif
