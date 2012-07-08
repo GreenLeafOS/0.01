@@ -11,30 +11,31 @@ class Atomic
 {
 public:
 
-	inline int Read();				/* 读 */
-	inline void Write(int Value);	/* 写 */
+	int Read();				/* 读 */
+	void Write(int Value);	/* 写 */
 
-	inline void Add(int Value);		/* 加 */
-	inline void Sub(int Value);		/* 减 */
+	void Add(int Value);		/* 加 */
+	void Sub(int Value);		/* 减 */
 
 	/* 自加或自减运算 */
-	inline void Inc();		/* 加1 */
-	inline void Dec();		/* 减1 */
+	void Inc();		/* 加1 */
+	void Dec();		/* 减1 */
 
 	/* 加或减后，返回新值 */
-	inline int AddRet(int Value);
-	inline int SubRet(int Value);
-	inline int IncRet();
-	inline int DecRet();
+	int AddRet(int Value);
+	int SubRet(int Value);
+	int IncRet();
+	int DecRet();
 
 	/* 位图操作 */
 
-	inline void SetBit(u8 Bit);
-	inline void ClearBit(u8 Bit);
-	inline bool TestBit(u8 Bit);
+	void SetBit(u8 Bit);
+	void ClearBit(u8 Bit);
+	bool TestBit(u8 Bit);
 private:
 	volatile int value;
 };
+
 /************************************************************************/
 /*					       读写操作
 /*                       Read Write
@@ -138,6 +139,7 @@ inline void Atomic::ClearBit(u8 Bit)
 	return;
 
 }
+
 inline bool Atomic::TestBit(u8 Bit)
 {
 	int mask = 1 << Bit;
@@ -148,4 +150,5 @@ inline bool Atomic::TestBit(u8 Bit)
 	return mask;
 
 }
+
 #endif

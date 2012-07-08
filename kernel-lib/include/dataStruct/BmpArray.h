@@ -8,6 +8,8 @@
 #include "Type.h"
 #include "Atomic.h"
 
+#define MaxBmp (Max/32)+1
+
 template <typename DataClass,unsigned int Max>
 class BmpArray
 {
@@ -25,8 +27,8 @@ public:
 	Result Get(int ID,DataClass &Item);
 	Result GetAddr(int ID,DataClass **Item);
 protected:
-	Atomic bmp[sizeof(DataClass)/32];	// 位图
-	DataClass data[Max];				// 数据
+	Atomic bmp[MaxBmp];		// 位图
+	DataClass data[Max];	// 数据
 };
 /************************************************************************/
 /*                      初始化函数
@@ -35,8 +37,8 @@ protected:
 template <typename DataClass,unsigned int Max>
 void BmpArray<DataClass,Max>::Init()
 {
-	for(int i=0;i<sizeof(DataClass)/32;i++)
-		bmp[i] = 0;
+	for(int i=0;i<MaxBmp;i++)
+		bmp[i].Write(0);
 	return;
 }
 /************************************************************************/
@@ -46,13 +48,13 @@ void BmpArray<DataClass,Max>::Init()
 template <typename DataClass,unsigned int Max>
 Result BmpArray<DataClass,Max>::GetFree(int &ID)
 {
-	for(int i=0;i<Max/32;i++)
+	for(int i=0;i<MaxBmp;i++)
 		{
 			Atomic byte = bmp[i];
-			if (!(byte.Read())) continue;
+			if (!(~(byte.Read()))) continue;
 			for(int j=0;j<32;j++)
 			{
-				if(byte.TestBit(j))
+				if (!(byte.TestBit(j)))
 				{
 					ID = (i*32)+j;
 					return S_OK;
@@ -68,16 +70,17 @@ Result BmpArray<DataClass,Max>::GetFree(int &ID)
 template <typename DataClass,unsigned int Max>
 Result BmpArray<DataClass,Max>::Add(int &ID,DataClass Item)
 {
-	for(int i=0;i<Max/32;i++)
+	for(int i=0;i<MaxBmp;i++)
 	{
 		Atomic byte = bmp[i];
-		if (!(byte.Read())) continue;
+		if (!(~(byte.Read()))) continue;
 		for(int j=0;j<32;j++)
 		{
-			if(byte.TestBit(j))
+			if (!(byte.TestBit(j)))
 			{
 				ID = (i*32)+j;
-				Set(ID,Item);
+				bmp[i].SetBit(j);
+				this->data[ID] = Item;
 				return S_OK;
 			}
 		}
@@ -88,20 +91,21 @@ Result BmpArray<DataClass,Max>::Add(int &ID,DataClass Item)
 template <typename DataClass,unsigned int Max>
 Result BmpArray<DataClass,Max>::Add(DataClass Item)
 {
-	for(int i=0;i<Max/32;i++)
-	{
-		Atomic byte = bmp[i];
-		if (!(byte.Read())) continue;
-		for(int j=0;j<32;j++)
+	for(int i=0;i<MaxBmp;i++)
 		{
-			if(byte.TestBit(j))
+			Atomic byte = bmp[i];
+			if (!(~(byte.Read()))) continue;
+			for(int j=0;j<32;j++)
 			{
-				int ID = (i*32)+j;
-				Set(ID,Item);
-				return S_OK;
+				if (!(byte.TestBit(j)))
+				{
+					int ID = (i*32)+j;
+					bmp[i].SetBit(j);
+					this->data[ID] = Item;
+					return S_OK;
+				}
 			}
 		}
-	}
 	return E_MAX;
 }
 /************************************************************************/
