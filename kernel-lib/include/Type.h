@@ -33,4 +33,5 @@ typedef unsigned long Result;
 #define E_LOCK			-7
 #define E_EMPTY			-8
 #define E_FULL			-9
+
 #endif
