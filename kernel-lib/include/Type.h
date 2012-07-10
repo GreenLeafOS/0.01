@@ -5,9 +5,9 @@ typedef unsigned int u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
 typedef void* point;
-typedef void (*MsgHandle)(point);
+typedef void (*MsgHandle)(point params);
 typedef void (*ThreadFun)(point params);
-
+typedef void (*FunAddr);
 struct point_list_info
 {
 	point *head;

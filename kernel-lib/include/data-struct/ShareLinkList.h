@@ -10,12 +10,12 @@
 
 // 链表项
 template<typename DataClass>
-typedef struct link_item
+struct link_item
 {
 	DataClass item;
 	u16 id;
 	u16 next;
-}LinkList;
+};
 
 // 共享数据缓冲的链表
 // 只能操作头尾数据的链表
@@ -31,6 +31,12 @@ public:
 	inline Result DeleteHead(DataClass &Item);
 	inline Result DeleteHead();
 
+	// 根据ID操作的函数
+	Result Get(int ID,DataClass &Item);
+	Result GetAddr(int ID,DataClass **Item);
+	Result Set(int ID,DataClass Item);
+	Result Set(int ID,DataClass *Item);
+
 	// 根据游标操作的函数
 	Result Insert(DataClass Item);
 	Result Delete();
@@ -38,18 +44,23 @@ public:
 	Result Set(DataClass *Item);
 	Result Get(DataClass &Item);
 	Result GetAddr(DataClass **Item);
+
 	// 游标函数
 	inline void MoveHead();
 	inline void MoveTail();
 	inline Result MoveNext();
-protected:
-	static BmpArray<LinkList<DataClass>,Max> data;	// 数据缓冲区
-private:
+
+	inline BmpArray<struct link_item<DataClass>,Max> *GetStaticAddr();
+
+
+public:
 	u16 head;
 	u16 tail;
 
 	u16 last_cursor;
 	u16 cursor;
+protected:
+	static BmpArray<struct link_item<DataClass>,Max> data;	// 数据缓冲区
 };
 /************************************************************************/
 /*                       初始化函数
@@ -71,7 +82,7 @@ inline void ShareLinkList<DataClass,Max>::Init()
 template<typename DataClass,unsigned int Max>
 inline Result ShareLinkList<DataClass,Max>::AddHead(DataClass Item)
 {
-	LinkList<DataClass> newone;
+	struct link_item<DataClass> newone;
 
 	// 获取ID
 	if (data.GetFree(newone.id) != S_OK) return E_MAX;
@@ -92,8 +103,8 @@ inline Result ShareLinkList<DataClass,Max>::AddHead(DataClass Item)
 template<typename DataClass,unsigned int Max>
 inline Result ShareLinkList<DataClass,Max>::AddTail(DataClass Item)
 {
-	LinkList<DataClass> newone;
-	LinkList<DataClass> *ptail;
+	struct link_item<DataClass> newone;
+	struct link_item<DataClass> *ptail;
 
 	// 获取ID
 	if (data.GetFree(newone.id) != S_OK) return E_MAX;	// 获取ID
@@ -119,7 +130,7 @@ template<typename DataClass,unsigned int Max>
 inline Result ShareLinkList<DataClass,Max>::DeleteHead(DataClass &Item)
 {
 	// 获取尾指针
-	LinkList<DataClass> *phead;
+	struct link_item<DataClass> *phead;
 	if (data.GetAddr(tail,&phead) != S_OK) return E_EMPTY;
 	// 头指针指向下一个
 	head = phead->next;
@@ -135,7 +146,7 @@ template<typename DataClass,unsigned int Max>
 inline Result ShareLinkList<DataClass,Max>::DeleteHead()
 {
 	// 获取尾指针
-	LinkList<DataClass> *phead;
+	struct link_item<DataClass> *phead;
 	if (data.GetAddr(tail,&phead) != S_OK) return E_EMPTY;
 	// 头指针指向下一个
 	head = phead->next;
@@ -152,9 +163,9 @@ inline Result ShareLinkList<DataClass,Max>::DeleteHead()
 template<typename DataClass,unsigned int Max>
 Result ShareLinkList<DataClass,Max>::Insert(DataClass Item)
 {
-	LinkList<DataClass> *plast;
-	LinkList<DataClass> *pnext;
-	LinkList<DataClass> newone;
+	struct link_item<DataClass> *plast;
+	struct link_item<DataClass> *pnext;
+	struct link_item<DataClass> newone;
 	if (data.GetFree(newone.id) != S_OK) return E_MAX;
 
 	// 如果有上一个项，则把上一个项的next设为newid
@@ -177,8 +188,8 @@ Result ShareLinkList<DataClass,Max>::Insert(DataClass Item)
 template<typename DataClass,unsigned int Max>
 Result ShareLinkList<DataClass,Max>::Delete(DataClass Item)
 {
-	LinkList<DataClass> *plast;
-	LinkList<DataClass> *pnext;
+	struct link_item<DataClass> *plast;
+	struct link_item<DataClass> *pnext;
 
 	// 如果有上一个项和当前项
 	if (  (data.GetAddr(last_cursor,plast) == S_OK) && (data.GetAddr(cursor,pnext) == S_OK)  )
@@ -200,7 +211,7 @@ Result ShareLinkList<DataClass,Max>::Delete(DataClass Item)
 template<typename DataClass,unsigned int Max>
 Result ShareLinkList<DataClass,Max>::Set(DataClass Item)
 {
-	LinkList<DataClass> *pitem;
+	struct link_item<DataClass> *pitem;
 	// 如果游标处有项，则把新项的item更新
 	if (data.GetAddr(cursor,pitem) == S_OK)
 	{
@@ -216,7 +227,7 @@ Result ShareLinkList<DataClass,Max>::Set(DataClass Item)
 template<typename DataClass,unsigned int Max>
 Result ShareLinkList<DataClass,Max>::Set(DataClass *Item)
 {
-	LinkList<DataClass> *pitem;
+	struct link_item<DataClass> *pitem;
 	// 如果游标处有项，则把新项的item更新
 	if (data.GetAddr(cursor,pitem) == S_OK)
 	{
@@ -236,7 +247,7 @@ Result ShareLinkList<DataClass,Max>::Set(DataClass *Item)
 template<typename DataClass,unsigned int Max>
 Result ShareLinkList<DataClass,Max>::Get(DataClass &Item)
 {
-	LinkList<DataClass> *pitem;
+	struct link_item<DataClass> *pitem;
 	// 如果游标处有项，则把新项的item更新
 	if (data.GetAddr(cursor,pitem) == S_OK)
 	{
@@ -256,7 +267,7 @@ Result ShareLinkList<DataClass,Max>::Get(DataClass &Item)
 template<typename DataClass,unsigned int Max>
 Result ShareLinkList<DataClass,Max>::GetAddr(DataClass **Item)
 {
-	LinkList<DataClass> *pitem;
+	struct link_item<DataClass> *pitem;
 	// 如果游标处有项，则把新项的item更新
 	if (data.GetAddr(cursor,pitem) == S_OK)
 	{
@@ -290,7 +301,7 @@ inline void ShareLinkList<DataClass,Max>::MoveTail()
 template<typename DataClass,unsigned int Max>
 inline Result ShareLinkList<DataClass,Max>::MoveNext()
 {
-	LinkList<DataClass> *pitem;
+	struct link_item<DataClass> *pitem;
 	// 如果游标处有项，获取next
 	if (data.GetAddr(cursor,pitem) == S_OK)
 	{
@@ -302,5 +313,58 @@ inline Result ShareLinkList<DataClass,Max>::MoveNext()
 		return E_NOITEM;
 	}
 	return S_OK;
+}
+/************************************************************************/
+/*                    	 	根据ID操作的函数
+/*                         Get GetAddr Set
+/************************************************************************/
+template<typename DataClass,unsigned int Max>
+Result ShareLinkList<DataClass,Max>::Get(int ID,DataClass &Item)
+{
+	struct link_item<DataClass> *link;
+	if (data.GetAddr(ID,&link) != S_OK) return E_NOITEM;
+	Item = link->item;
+	return S_OK;
+}
+
+
+template<typename DataClass,unsigned int Max>
+Result ShareLinkList<DataClass,Max>::GetAddr(int ID,DataClass **Item)
+{
+	struct link_item<DataClass> *link;
+	if (data.GetAddr(ID,&link) != S_OK) return E_NOITEM;
+
+	*Item = &link->item;
+	return S_OK;
+}
+
+template<typename DataClass,unsigned int Max>
+Result ShareLinkList<DataClass,Max>::Set(int ID,DataClass Item)
+{
+	struct link_item<DataClass> *link;
+	if (data.GetAddr(ID,&link) != S_OK) return E_NOITEM;
+
+	link->item = Item;
+	return S_OK;
+}
+
+template<typename DataClass,unsigned int Max>
+Result ShareLinkList<DataClass,Max>::Set(int ID,DataClass *Item)
+{
+	struct link_item<DataClass> *link;
+	if (data.GetAddr(ID,&link) != S_OK) return E_NOITEM;
+
+	link->item = *Item;
+	return S_OK;
+}
+
+/************************************************************************/
+/*                    	 获取静态数据缓冲区指针
+/*                          GetStaticAddr
+/************************************************************************/
+template<typename DataClass,unsigned int Max>
+inline BmpArray<struct link_item<DataClass>,Max>* ShareLinkList<DataClass,Max>::GetStaticAddr()
+{
+	return &data;
 }
 #endif /* SHARELINKLIST_H_ */

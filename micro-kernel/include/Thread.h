@@ -6,7 +6,7 @@
  *                     								绿叶-柳暗花明
  ===============================================================*/
 #include "DataStruct.h"
-
+#include "Lock.h"
 
 /*===========线程上下文寄存器结构=============*/
 typedef struct stack_frame {
@@ -24,8 +24,6 @@ typedef struct stack_frame {
 	u32	edx;
 	u32	ecx;
 	u32	eax;
-	/* 某某压入 */
-	u32	retaddr;
 	/* 系统压入 */
 	u32	eip;
 	u32	cs;
@@ -37,11 +35,13 @@ typedef struct stack_frame {
 #define REGFRAME_LOW 	&Thread::run_thread->thread_info.reg.gs
 
 /*==============线程描述符================*/
-struct kernel_thread
+struct kernel_thread_desc
 {
 	u16 id;			/* 线程ID */
 	u16 state;		/* 状态信息 */
 	u32 rec_des;	/* 占有资源描述符 */
+	FunAddr save_fun;		/* 专有的保存状态的函数 */
+	FunAddr restart_fun;	/* 专有的恢复状态的函数 */
 	StackFrame reg;	/* 寄存器值 */
 };
 #define THREAD_STATE_RUNNING 1
@@ -52,10 +52,11 @@ struct kernel_thread
 /*==============线程栈==================*/
 typedef union thread_union
 {
-	struct kernel_thread thread_info;
+	struct kernel_thread_desc thread_info;
 	u32 stack[1024];		/* 4k的栈 */
 }KernelThread;
 #define NR_THREAD 32
+
 
 
 /*==============Thread命名空间==================*/
@@ -66,9 +67,9 @@ namespace Thread
 	 * 分配一个线程描述符
 	 * 初始化线程描述符
 	 * 并在就绪线程链表中添加一个项
-	 * 函数地址和参数压入线程的栈
-	 */
-	Result Create(ThreadFun fun,point params);
+	 * 初始化栈
+	 * 函数地址和参数压入线程的栈 */
+	Result Create(ThreadFun fun,point params,u16 &ret_id);
 
 	/* 睡眠线程
 	 * 如果处于运行态,保存上下文,（通过调用Save()函数）
@@ -88,21 +89,25 @@ namespace Thread
 	 * 释放线程占有的任何资源(发送广播消息) */
 	Result Kill(u16 id);
 
+	/* 设置线程的自定义恢复，保存函数
+	 * 这种机制用于支持涉及优先级转换的线程 */
+	inline Result SetFun(int id,FunAddr save,FunAddr restart);
 
 /***************************仅针对于run_thread***************************/
+/****************缺省函数，在没有制定save_fun,和restart_fun的时候。**********/
 
 	/* 保存run_thread的通用寄存器和部分段寄存器到线程栈 */
-	inline void Save();
+	void Save();
+	/* 恢复并跳到线程中执行 */
+	void Restart();
 
-	/* 恢复run_thread的上下文，并把控制权交给线程 */
-	inline void Restart();
 
 	/* 调度算法,选择一个线程作为run_thread */
 	void Schedule();
 
 /*******************************数据区***********************************/
 	typedef ShareLinkList<KernelThread*,NR_THREAD> ThreadList;
-
+	typedef BmpArray<struct link_item<KernelThread*>,NR_THREAD> StaticData;
 	extern u32 kernel_esp;
 	extern KernelThread* run_thread;
 	extern ThreadList ready_thread;
@@ -110,64 +115,24 @@ namespace Thread
 };
 
 /************************************************************************/
-/*                      保存寄存器函数
-/*                         Save
+/*					设置线程的自定义恢复，保存函数
+/*                          SetFun
 /************************************************************************/
-inline void Thread::Save()
+inline Result Thread::SetFun(int id,FunAddr save,FunAddr restart)
 {
-	/* 保存原esp的值到kernel_esp变量中 */
-	asm volatile("movl %%esp,%0"
-				:"+m"(Thread::kernel_esp)
-				);
+	KernelThread*  *p_thread;
 
-	/* esp指向 线程栈中保存通用寄存器部分的最高地址 */
-	asm volatile("movl %0,%%esp"
-				:
-				:"m"(RUNTHREAD_REG_HIGH)
-				);
+	/* 获取线程指针 */
+	if (ready_thread.GetAddr(id,&p_thread) != S_OK) return E_NOITEM;
 
-	/*保存通用寄存器和一些段寄存器*/
-	asm volatile("cld 		\n"
-				"pushal		\n"
-				"push %ds	\n"
-				"push %es	\n"
-				"push %fs	\n"
-				"push %gs	\n"
-				);
+	/* 设置函数 */
+	LOCK()
+		p_thread->thread_info.save_fun = save;
+		p_thread->thread_info.restart_fun = restart;
+	UNLOCK()
 
-	/* 恢复esp */
-	asm volatile("movl %0,%%esp"
-				:
-				: "m"(Thread::kernel_esp)
-				);
-	return;
+	return S_OK;
 }
-/************************************************************************/
-/*                      恢复寄存器函数
-/*                        Restart
-/************************************************************************/
-inline void Thread::Restart()
-{
-	/* 保存原esp的值到kernel_esp变量中 */
-	asm volatile("movl %%esp,%0"
-				:"+m"(Thread::kernel_esp)
-				);
 
-	/* esp指向 线程栈中保存通用寄存器部分的最低地址 */
-	asm volatile("movl %0,%%esp"
-				:
-				:"m"(REGFRAME_LOW)
-				);
 
-	/*恢复通用寄存器和一些段寄存器*/
-	asm volatile("cld 			\n"
-				"pop %gs		\n"
-				"pop %fs		\n"
-				"pop %es		\n"
-				"pop %ds		\n"
-				"popal			\n"
-				"addl $4,%esp	\n"
-				"iretd"
-				);
-}
 #endif /* KERNEL_H_ */
