@@ -69,7 +69,7 @@ namespace Thread
 	 * 并在就绪线程链表中添加一个项
 	 * 初始化栈
 	 * 函数地址和参数压入线程的栈
-	 * */
+	 */
 	Result Create(ThreadFun fun,point params,u16 &ret_id);
 
 	/* 睡眠线程
@@ -77,25 +77,25 @@ namespace Thread
 	 * 把线程的状态设为睡眠态
 	 * 从就绪或运行队列中移除
 	 * 加入睡眠队列
-	 * */
+	 */
 	Result Sleep(u16 id);
 
 	/* 唤醒线程
 	 * 把线程的状态设为就绪态
 	 * 从睡眠队列中移除
 	 * 加入就绪队列
-	 * */
+	 */
 	Result Wake(u16 id);
 
 	/* 杀死线程
 	 * 把线程从任何一个队列中移除
 	 * 释放线程占有的任何资源(发送广播消息)
-	 * */
+	 */
 	Result Kill(u16 id);
 
 	/* 设置线程的自定义恢复，保存函数
 	 * 这种机制用于支持涉及优先级转换的线程
-	 * */
+	 */
 	inline Result SetFun(int id,FunAddr save,FunAddr restart);
 
 /******仅针对于run_thread*************/
@@ -105,16 +105,16 @@ namespace Thread
 			(*desc->restart_fun);
 
 	/* 保存run_thread的通用寄存器和部分段寄存器到线程栈
-	 * */
+	 */
 	void Save();
 
 	/* 恢复并跳到线程中执行
-	 * */
+	 */
 	void Restart();
 
 
 	/* 调度算法,选择一个线程作为run_thread
-	 * */
+	 */
 	void Schedule();
 
 /**************数据区***************/
