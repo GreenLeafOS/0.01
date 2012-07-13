@@ -135,4 +135,6 @@ inline Result Thread::SetFun(int id,FunAddr save,FunAddr restart)
 }
 
 
+
+
 #endif /* KERNEL_H_ */
