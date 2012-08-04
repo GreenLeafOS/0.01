@@ -10,8 +10,8 @@ ld_flags			=	-s -Ttext $(entrypoint) -Map bin/kernel.map
 image		= 	bin/kernel.img
 #------------Ä¿±ê-----------
 boot		=	bin/boot.bin bin/loader.bin
-sub_dir		=	
-# arch micro-kernel kernel kernel-lib lib
+sub_dir		=	arch
+# micro-kernel kernel kernel-lib lib
 objs 		:= $(foreach path,$(sub_dir),bin/$(path).o)
 
 .PHONY : clean all finalclean
