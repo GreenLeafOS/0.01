@@ -7,32 +7,7 @@
  ===============================================================*/
 #include "DataStruct.h"
 #include "Lock.h"
-
-/*===========线程上下文寄存器结构=============*/
-typedef struct stack_frame {
-	/* 单个压入 */
-	u32	gs;
-	u32	fs;
-	u32	es;
-	u32	ds;
-	/* pushal压入*/
-	u32	edi;
-	u32	esi;
-	u32	ebp;
-	u32	kernel_esp;
-	u32	ebx;
-	u32	edx;
-	u32	ecx;
-	u32	eax;
-	/* 系统压入 */
-	u32	eip;
-	u32	cs;
-	u32	eflags;
-	u32	esp;
-	u32	ss;
-}StackFrame;
-#define REGFRAME_HIGH 	&Thread::run_thread->thread_info.reg.eax
-#define REGFRAME_LOW 	&Thread::run_thread->thread_info.reg.gs
+#include "reg.h"
 
 /*==============线程描述符================*/
 struct kernel_thread_desc

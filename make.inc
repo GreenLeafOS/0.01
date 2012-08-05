@@ -1,12 +1,16 @@
 asm					=	as
-asm_flags			=	-I ../lib/include/
+asm_flags			=	-I ../arch/include/
 
 cc					=	gcc
-cc_flags			=	-I include/ -c
+cc_flags			=	-I include/ \
+						-I ../kernel/include -I ../micro-kernel/include \
+						-I ../kernel-lib/include \
+						-I ../arch/include \
+						-c -std=c99
 
 cpp					=	g++
-cpp_flags			=	-I ../kernel/include -I ../micro-kernel/include/ \ 
-						-I ../lib/include -I ../kernel-lib/include \
+cpp_flags			=	-I ../kernel/include -I ../micro-kernel/include \
+						-I ../kernel-lib/include \
 						-I ../arch/include \
 						-c -fno-rtti \
 						-Wwrite-strings
@@ -15,7 +19,7 @@ ld					=	ld
 ld_flags			=	-r
 
 
-objs		+=	$(cpp_objs) $(cc_objs) $(asm_objs) 
+objs		+=	$(asm_objs) $(cpp_objs) $(cc_objs) 
 
 .PHONY : clean
 
@@ -23,13 +27,13 @@ objs		+=	$(cpp_objs) $(cc_objs) $(asm_objs)
 $(final_obj) : $(objs)
 	$(ld) $(ld_flags) $(objs) -o $@	
 
-$(cc_objs): %.o : %.c
+$(cc_objs): %.c.o : %.c
 	$(cc) $(cc_flags) $< -o $@
 
-$(cpp_objs): %.o : %.cc
+$(cpp_objs): %.cc.o : %.cc
 	$(cpp) $(cpp_flags) $< -o $@
 
-$(asm_objs): %.a.o : %.asm
+$(asm_objs): %.s.o : %.s
 	$(asm) $(asm_flags) $< -o $@
 	
 	
