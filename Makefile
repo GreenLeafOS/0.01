@@ -3,9 +3,10 @@
 #					系统编译						#
 #################################################
 entrypoint			= 	0x10000
+memoryinfo			=	0x15000
 #------------连接-----------
 ld					=	ld
-ld_flags			=	-s -Ttext $(entrypoint) -Map bin/kernel.map
+ld_flags			=	-s -Ttext $(entrypoint) -section-start memory=$(memoryinfo) -Map bin/kernel.map
 #---------最终目标----------
 image		= 	bin/kernel.img
 #------------目标-----------

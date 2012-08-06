@@ -9,7 +9,8 @@ cpp_objs	=
 cc_objs		=	kernel.c.o			\
 				desc.c.o			\
 				table_gdt.c.o table_ldt.c.o table_idt.c.o \
-				tss.c.o
-asm_objs	=	start.s.o print.s.o
+				page.c.o memory.c.o \
+				tss.c.o 8259A.c.o
+asm_objs	=	start.s.o print.s.o memory.s.o
 
 sinclude ../make.inc

@@ -3,6 +3,8 @@
 .extern		gdt_init
 .extern		idt_init
 .extern		tss_init
+.extern		init_8259A
+.extern		mem_init
 
 .extern		KernelMain
 
@@ -15,7 +17,10 @@ _start:
 	mov		$40,%ax
 	mov		%ax,%gs
 
+	call	init_8259A
 	call	idt_init
 	call	tss_init
+
+	call	mem_init
 
 	jmp		KernelMain

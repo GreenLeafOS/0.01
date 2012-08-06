@@ -5,6 +5,7 @@
 #include "table.h"
 
 TSS tss;
+u16 tss_sel;
 
 /************************************************************************/
 /*							≥ı ºªØ
@@ -15,7 +16,8 @@ void tss_init()
 	int i = gdt_add(desc_create((u32)&tss,sizeof(tss)-1,DA_386TSS));
 	gdt_load();
 	tss.iobase = sizeof(tss);
-	tss_load(gdt_get_sel(i,0));
+	tss_sel = gdt_get_sel(i,0);
+	tss_load(tss_sel);
 }
 
 /************************************************************************/

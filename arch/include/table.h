@@ -90,4 +90,5 @@ void tss_init();
 void tss_load(u16 sel);
 
 extern TSS tss;
+extern u16 tss_sel;
 #endif

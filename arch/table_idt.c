@@ -79,3 +79,10 @@ void idt_load()
 			:
 			: "g"(pIdt));
 }
+
+void intr_handle()
+{
+	char *str = "\nIntr";
+	print(str);
+	while(1);
+}

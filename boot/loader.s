@@ -24,6 +24,8 @@ _start:
 	mov	%ax, %ss
 	mov	$0x7000,%sp
 
+
+
 	/* 读入内核 */
 	mov	$0, %ax
 	mov	%ax,%es
@@ -31,6 +33,9 @@ _start:
 	mov	$Kernel_Start, %al
 	mov	$Kernel_Size,  %cl
 	call read_sector
+
+	/* 获取内存数量 */
+	call	get_mem_info
 
 	/* 跳入保护模式 */
 	jmp	jmp_pm
@@ -40,7 +45,7 @@ _start:
 /*					  read_sector
 /* 入口参数：	al 起始扇区
 /*			cl 扇区数
-	读入 es:bx 中
+/*	读入 es:bx 中
 /************************************************************************/
 read_sector:
 	push	%bp
@@ -65,6 +70,33 @@ _read_sector_reading:
 	add		$2,%sp
 	pop		%bp
 
+	ret
+/************************************************************************/
+/*						获取内存信息
+/*					    get_mem_info
+/*	读入 es:di 中
+/************************************************************************/
+MCRNumber		=		0x200
+get_mem_info:
+	mov		$0x1500,%ax
+	mov		%ax,%es
+	mov		$0,%di
+
+	movl	$0,%ebx
+_get_mem_info_loop:
+	mov		$0xE820,%eax
+	mov		$20,%ecx
+	mov		$0x534D4150,%edx
+	int		$0x15
+	jc		_get_mem_info_fail
+	add		$20,%di
+	incl	%es:(MCRNumber)
+	cmp		$0,%ebx
+	jne		_get_mem_info_loop
+
+	ret
+_get_mem_info_fail:
+	movl	$0,%es:(MCRNumber)
 	ret
 /************************************************************************/
 /*                      GDT段描述符表
