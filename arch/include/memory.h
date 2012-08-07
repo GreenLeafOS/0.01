@@ -11,9 +11,16 @@
 #include "type.h"
 #include "setbit.h"
 
-#define MEM_BMP_MB(i)	8*i
-#define MB_TO_PAGE(i)	i*256
+#define MAX_PAGE_ENTRY	1024
 #define PAGE_SIZE		4096
+
+#define MEM_BMP_MB(i)	8*i/16
+
+#define MB_TO_PAGE(i)	i*256
+#define B_TO_PAGE(i)	i/PAGE_SIZE
+#define PAGE_TO_NEED_TABLE(i)		i/MAX_PAGE_ENTRY
+#define B_TO_NEED_TABLE(i)	PAGE_TO_NEED_TABLE(B_TO_PAGE(i))
+
 
 struct ARDS
 {

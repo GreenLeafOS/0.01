@@ -10,7 +10,7 @@ Kernel_Start		=	3
 Kernel_End			=	18
 Kernel_Size			=	Kernel_End - Kernel_Start + 1
 Kernel_FileAddr		=	0x4000		/* 暂时可以随便放 */
-Kernel_OffSetAddr	=	0x10000		/* 1M开始 */
+Kernel_OffSetAddr	=	0x100000	/* 1M开始 */
 /************************************************************************/
 /*						入口函数
 /*						start

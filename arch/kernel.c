@@ -8,7 +8,7 @@ int disp_pos = 0;
 
 void KernelMain()
 {
-	char *str = "\nIn Kernel now!";
+	char *str = "In Kernel now!\n";
 	print(str);
 	while(1);
 }

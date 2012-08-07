@@ -104,11 +104,13 @@ void* mem_page_alloc()
 		if (l_bmp == 0xffffffff) continue;
 		for(int j=0;j<32;j++)
 		{
-			if (BITTEST(&l_bmp,j)) continue;
-			int index = ((i*32)+j);
-			BITSET(mem_used_map,index);
-			return (void*)(index*PAGE_SIZE);
-		}/* end for */
-	}/* end for*/
+			if (!(BITTEST(&l_bmp,j)))
+			{
+				int index = (i*32)+j;
+				BITSET(mem_used_map,index);
+				return (index*PAGE_SIZE);
+			}
+		}
+	}
 	return 0xffffffff;
 }

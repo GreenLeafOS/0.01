@@ -39,57 +39,46 @@
  * 		x /256bx 0x16000
  * 		b 0x10bd4
  * 		b 0x10c07
+ *
  * */
 
 
 
+/*
+ * ebp - 20 : *page_dir
+ * ebp - 28 : i
+ * ebp - 16 : *page_tbl
+ * ebp - 24 : j
+ * 参数
+ * esp + 8  : i
+ * esp + 4  : *page_tbl
+ * esp + 0  : *page_dir
+ * 参数
+ * esp + 8  : j
+ * esp + 4  : phy_addr
+ * esp + 0  : *page_tbl
+ */
 
-void page_init()
-{
-	PageTable *page_dir =(PageTable*)mem_page_alloc();
-
-	for(int i=0;i<MB_TO_PAGE(4);i++)
-	{
-		PageTable* page_tbl = (PageTable*)mem_page_alloc();
-		page_link_table(page_dir,page_tbl,i);
-		for(int j=0;j<1024;j++)
-		{
-			int phy_addr = (i * MAX_PAGE_ENTRY + j) * PAGE_SIZE;
-			page_link_addr(page_tbl,phy_addr,j);
-		}
-	}
-	page_directory_load((u32)(page_dir));
-}
 
 /*
  * 页目录链接页表（页表映射到页目录）
  * 参数：
  * 		page_dir 页目录表指针
- * 		page_tbl 页表指针
- * 		linear_addr	页表映射到的高位的10位地址,取低10位，高位丢弃。
+ * 		page_tbl 页表指针。取高20位
+ * 		linear_index	页表映射到的高位的10位地址,取低10位，高位丢弃。
  * */
-void page_link_table(PageTable* page_dir,PageTable* page_tbl,u16 linear_addr)
-{
-	page_dir->items[linear_addr & 0x3FF].addr = (u32)page_tbl;
-}
-
-
-
+#define page_link_table(page_dir,page_tbl,linear_index)	\
+	((PageTable*)page_dir)->items[(u16)linear_index & 0x3FF].addr = (u32)((page_tbl)>>12);
 
 
 /* 页表链接地址（线性地址映射到物理地址）
  * 参数：
  * 		page_tbl 页表指针
- * 		phy_page_addr 物理页的地址
- * 		linear_addr	页表映射到的高位的10位地址,取低10位，高位丢弃。
+ * 		phy_page_addr 物理页的地址.取高20位
+ * 		linear_index	页表映射到的高位的10位地址,取低10位，高位丢弃。
  * */
-void page_link_addr(PageTable* page_tbl,u32 phy_page_addr,u16 linear_addr)
-{
-	page_tbl->items[linear_addr & 0x3FF].addr = phy_page_addr;
-}
-
-
-
+#define page_link_addr(page_tbl,phy_page_addr,linear_index) \
+	((PageTable*)page_tbl)->items[(u16)linear_index & 0x3FF].addr = (u32)((phy_page_addr)>>12);
 
 
 /* 直接映射(从页目录表的项中获取页表地址)
@@ -115,6 +104,43 @@ int page_link(PageTable* page_dir,u32 phy_page_addr,u32 linear_addr)
 }
 
 
+/*
+ * 初始化
+ */
+void page_init()
+{
+	/* 页表大小 */
+	int page_table_size = B_TO_NEED_TABLE(mem_size);
+
+	/* 外层循环，循环建立页表和页目录的链接 */
+	for(int i=0;i<page_table_size;i++)
+	{
+		u32 page_tbl = 0x400000+(i*PAGE_SIZE);
+
+		((PageTable*)0x3ff000)->items[i].p = 1;	// pde项P位设置为1
+		page_link_table(0x3ff000,page_tbl,i);	// pde项addr设置为页表地址
+
+		/* 内层循环，循环建立物理地址与页表的链接 */
+		for(int j=0;j<1024;j++)
+		{
+			((PageTable*)page_tbl)->items[j].p = 1;		// pte项P位设置为1
+			page_link_addr(page_tbl,(i*MAX_PAGE_ENTRY+j)*PAGE_SIZE,j);	// pte项addr设置为物理页框地址
+
+		}
+	}
+	for (int i=0;i<(page_table_size/32)+1;i++)
+	{
+		*(mem_used_map+i) = ~0;
+	}
+
+	/* 加载 */
+	page_directory_load((u32)(0x3ff000));
+
+	/* 显示字符串 */
+	char *str = "Setup Paging\n";
+	print(str);
+
+}
 
 
 /* 加载页目录

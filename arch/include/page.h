@@ -12,9 +12,6 @@
 #include "memory.h"
 
 
-#define MAX_PAGE_ENTRY	1024
-
-
 /* 页表页目录项结构 */
 typedef struct page_entry
 {
