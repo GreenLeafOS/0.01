@@ -1,7 +1,7 @@
 #ifndef IO_H_
 #define IO_H_
 
-#include "Type.h"
+#include "type.h"
 /*===============================================================
  *                      io.h
  *                	    io²Ù×÷

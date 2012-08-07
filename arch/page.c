@@ -7,11 +7,6 @@
 
 #include "page.h"
 
-void page_init()
-{
-
-}
-
 /*
  * 在写代码之前，我们先算一笔账。
  * 表项: 4 b
@@ -40,10 +35,31 @@ void page_init()
  * }
  *
  * 了解了这个，写起来是不是游刃有余了呢？
+ * 调试命令：
+ * 		x /256bx 0x16000
+ * 		b 0x10bd4
+ * 		b 0x10c07
  * */
 
 
 
+
+void page_init()
+{
+	PageTable *page_dir =(PageTable*)mem_page_alloc();
+
+	for(int i=0;i<MB_TO_PAGE(4);i++)
+	{
+		PageTable* page_tbl = (PageTable*)mem_page_alloc();
+		page_link_table(page_dir,page_tbl,i);
+		for(int j=0;j<1024;j++)
+		{
+			int phy_addr = (i * MAX_PAGE_ENTRY + j) * PAGE_SIZE;
+			page_link_addr(page_tbl,phy_addr,j);
+		}
+	}
+	page_directory_load((u32)(page_dir));
+}
 
 /*
  * 页目录链接页表（页表映射到页目录）
@@ -81,15 +97,21 @@ void page_link_addr(PageTable* page_tbl,u32 phy_page_addr,u16 linear_addr)
  * 		page_dir 页目录表指针
  * 		phy_page_addr 物理页的地址
  * 		linear_addr	页表映射到的线性地址高位的10位地址,取低10位，高位丢弃。
+ * 	返回值：
+ * 		0表示成功，-1表示页表不存在
  * */
-void page_link(PageTable* page_dir,u32 phy_page_addr,u32 linear_addr)
+int page_link(PageTable* page_dir,u32 phy_page_addr,u32 linear_addr)
 {
 	u16 addr_high = linear_addr >> 22;						/* 线性地址高10位 */
 	u16 addr_mid =  (linear_addr >> 12) & 0x3FF;			/* 线性地址中10位 */
 
+	if (page_dir->items[addr_high].p == 1) return -1;		/* 页表不存在 */
+
 	u32 page_tbl_addr = page_dir->items[addr_high].addr;	/* 获取页表地址高20位 */
 	PageTable* page_tbl = (PageTable*)(page_tbl_addr << 12);	/* 计算页表指针 */
 	page_tbl->items[addr_mid].addr = phy_page_addr;			/* 映射 */
+
+	return 0;
 }
 
 
@@ -99,7 +121,7 @@ void page_link(PageTable* page_dir,u32 phy_page_addr,u32 linear_addr)
  * 参数；
  * 		phy_addr 页目录的物理地址
  * */
-void page_load(u32 phy_addr)
+void page_directory_load(u32 phy_addr)
 {
 	__asm volatile(
 			"movl	%0,%%eax		\n"

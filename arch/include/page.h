@@ -8,10 +8,12 @@
 #ifndef PAGE_H_
 #define PAGE_H_
 
-#include "Type.h"
+#include "type.h"
+#include "memory.h"
+
 
 #define MAX_PAGE_ENTRY	1024
-#define PAGE_SIZE		4096
+
 
 /* 页表页目录项结构 */
 typedef struct page_entry
@@ -45,7 +47,7 @@ void page_link_table(PageTable* page_dir,PageTable* page_tbl,u16 linear_addr);
 /* 页表链接地址（线性地址映射到物理地址） */
 void page_link_addr(PageTable* page_tbl,u32 phy_page_addr,u16 linear_addr);
 /* 直接映射(从页目录表的项中获取页表地址) */
-void page_link(PageTable* page_dir,u32 phy_page_addr,u32 linear_addr);
+int page_link(PageTable* page_dir,u32 phy_page_addr,u32 linear_addr);
 
 
 /* 加载页目录 */

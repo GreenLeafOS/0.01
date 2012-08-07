@@ -6,7 +6,6 @@
  */
 
 #include "memory.h"
-#include "page.h"
 
 /*
  * 初始化
@@ -16,7 +15,6 @@
  * 则一个项可表示32个页。32*4096/1024 = 128 Kb = 1/8 M
  * 8个表项就是 128*8/1024 = 1 M
  */
-#define MEM_BMP_MB(i) 8*i
 
 void mem_init()
 {
@@ -33,14 +31,14 @@ void mem_init()
 	mem_size = mem_used_map_max*32*PAGE_SIZE;
 
 	/* 给指针赋值 */
-	mem_used_map = 0x16000;
+	mem_used_map =(u32*)0x16000;
 
 	/* 保留4M的内核空间 */
 	for(int i=0;i<MEM_BMP_MB(4);i++)
 		*(mem_used_map + i) = ~0;
 
 	/* 其余设置为0 */
-	for(int i=MEM_BMP_MB(2);i<mem_used_map_max;i++)
+	for(int i=MEM_BMP_MB(4);i<mem_used_map_max;i++)
 		*(mem_used_map + i) = 0;
 }
 
@@ -73,20 +71,44 @@ void mem_page_free(u32 index)
 /*
  * 查找一个空闲页
  * 在位图中，1表示使用，0表示空闲
+ * 返回页标号
  * */
 u32 mem_page_getfree()
 {
 	for(int i=0;i<mem_used_map_max;i++)
 	{
-		u32 byte = *(mem_used_map + i);
-		if (!(~byte)) continue;
+		u32 l_bmp = *(mem_used_map + i);
+		if (l_bmp == 0xffffffff) continue;
 		for(int j=0;j<32;j++)
 		{
-			if (!(BITTEST(&byte,j)))
+			if (!(BITTEST(&l_bmp,j)))
 			{
-				return (i*32)+j;
+				return ((i*32)+j);
 			}/* end if */
 		}/* end for */
 	}/* end for*/
 	return -1;
+}
+
+
+/*
+ * 分配一个页
+ * 返回地址
+ * ebp - 20 j
+ */
+void* mem_page_alloc()
+{
+	for(int i=0;i<mem_used_map_max;i++)
+	{
+		u32 l_bmp = *(mem_used_map + i);
+		if (l_bmp == 0xffffffff) continue;
+		for(int j=0;j<32;j++)
+		{
+			if (BITTEST(&l_bmp,j)) continue;
+			int index = ((i*32)+j);
+			BITSET(mem_used_map,index);
+			return (void*)(index*PAGE_SIZE);
+		}/* end for */
+	}/* end for*/
+	return 0xffffffff;
 }

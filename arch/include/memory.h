@@ -8,9 +8,12 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
-#include "Type.h"
+#include "type.h"
 #include "setbit.h"
 
+#define MEM_BMP_MB(i)	8*i
+#define MB_TO_PAGE(i)	i*256
+#define PAGE_SIZE		4096
 
 struct ARDS
 {
@@ -26,6 +29,7 @@ void mem_init();
 void mem_page_busy(u32 index);
 void mem_page_free(u32 index);
 u32 mem_page_getfree();
+void* mem_page_alloc();
 
 extern struct ARDS mem_info[12];
 extern int mem_size;

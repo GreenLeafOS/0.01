@@ -5,6 +5,7 @@
 .extern		tss_init
 .extern		init_8259A
 .extern		mem_init
+.extern		page_init
 
 .extern		KernelMain
 
@@ -22,5 +23,6 @@ _start:
 	call	tss_init
 
 	call	mem_init
+	call	page_init
 
 	jmp		KernelMain
