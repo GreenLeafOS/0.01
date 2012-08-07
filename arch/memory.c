@@ -112,5 +112,5 @@ void* mem_page_alloc()
 			}
 		}
 	}
-	return 0xffffffff;
+	return (void*)0xffffffff;
 }

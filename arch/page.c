@@ -106,6 +106,7 @@ int page_link(PageTable* page_dir,u32 phy_page_addr,u32 linear_addr)
 
 /*
  * 初始化
+ * 建立对等映射
  */
 void page_init()
 {
