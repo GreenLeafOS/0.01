@@ -5,19 +5,19 @@
  *      Author: greenleaf
  */
 
-#include "include/module.h"
+#include "include/kernel.h"
 
-StackArrayStruct(mod_table,u32,32,);
+/* 模块注册表 */
+StackArrayStruct(mod_table,ModuleHead*,32,);
 
 /* 加载模块 */
-int mod_load(u32 mod_addr)
+int mod_load(ModuleHead* p_mod)
 {
-	int id = stack_array_add(&mod_table_data,(point)mod_addr);
+	int id = stack_array_add(&mod_table_data,(point)p_mod);
 	if (id != -1)
 	{
-		((ModHead*)mod_addr)->id = id;
-		FunAddr init = ((ModHead*)mod_addr)->fun_init;
-		(*init)();
+		p_mod->id = id;
+		(*(p_mod->fun_init))();
 	}
 	return id;
 }

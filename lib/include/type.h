@@ -3,14 +3,20 @@
 
 #define NULL	'\0'
 
+#define True	1
+#define False	0
+
 typedef unsigned int size_t;
 typedef unsigned int u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
+typedef u16 id_t;
 typedef void* point;
-typedef void (*MsgHandle)(point params);
 typedef void (*ThreadFun)(point params);
 typedef void (*FunAddr)();
+typedef int Bool;
+
+
 struct point_list_info
 {
 	point *head;
