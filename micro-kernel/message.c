@@ -13,7 +13,6 @@ MsgRegItem msg_reg_table[REG_TABLE_MAX];
 StackArray msg_stack = {REG_TABLE_ITEM_MAX,sizeof(id_t),0,(u8*)&msg_reg_table};
 
 
-
 /*
  * ·¢ËÍÏûÏ¢
  */

@@ -9,7 +9,11 @@
 #define KERNEL_H_
 
 #include <lib/include/stack_array.h>
+#include <lib/include/round_queue.h>
+#include <lib/include/bmp.h>
+#include <lib/include/list.h>
 #include <arch/include/lock.h>
+#include <arch/include/memory.h>
 /************************************************************************/
 /*							内核对象
 /*							object
@@ -36,6 +40,7 @@ typedef struct message_head
 	id_t	sender;
 	id_t	receiver;
 	point	body_point;
+	u16		body_size;
 }MsgHead;
 typedef void (*MsgHandle)(MsgHead msg_head);
 
@@ -57,11 +62,12 @@ typedef struct message_reg_item
 #define THREAD_STATE_SLEEPING	4
 typedef struct kernel_thread_desc
 {
+	ListNode node;	/* 链接上下线程的节点 */
 	id_t id;		/* 线程ID */
 	u16  flags;		/* 状态信息 */
 	u16  priority;	/* 优先级 */
 	u32  stack_top;	/* 栈顶 */
-	/* 消息队列 */
+	RoundQueueDefine(msg_queue,MsgHead,32,);	/* 消息队列 */
 }ThreadDesc;
 
 
@@ -82,12 +88,12 @@ typedef union thread_union
 int 	mod_load(ModuleHead* p_mod);
 
 /* 线程函数 */
-id_t 	thread_create(ThreadFun fun,point params);
+id_t 	thread_create(ThreadFun fun,MsgHead msg_head);
 int 	thread_sleep(id_t id);
 int 	thread_wake(id_t id);
 int 	thread_kill(id_t id);
 
-void 	thread_chedule();
+void 	thread_schedule();
 
 /* 消息函数 */
 id_t 	msg_send(MsgHead msg_head);
@@ -110,5 +116,10 @@ extern MsgRegItem msg_reg_table[REG_TABLE_MAX];
 extern StackArray msg_stack;
 
 /* 线程 */
+BmpArrayDefine(thread_table,KernelThread*,NR_THREAD,extern);
+
+KernelThread*	thread_run;
+ListHead		thread_ready;
+ListHead		thread_sleep;
 
 #endif /* KERNEL_H_ */

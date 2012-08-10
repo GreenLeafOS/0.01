@@ -44,7 +44,7 @@ static inline int stack_array_add(StackArray *data,point value)
 	int id = data->count;
 	if (++data->count < data->max)
 	{
-		memcpy(data->array + id,value,data->size);
+		memcpy(data->array + id*data->size,value,data->size);
 		return id;
 	}
 	return E_MAX;

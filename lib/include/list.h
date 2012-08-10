@@ -2,9 +2,10 @@
  *                        list.h
  *                	      双向链表
  ===============================================================*/
-typedef int Bool;
-#define False 0
-#define True 1
+#ifndef _LIST_H
+#define _LIST_H
+
+#include <lib/include/type.h>
 
 /* 节点没有数据，仅仅起链接作用 */
 typedef struct list_node
@@ -36,3 +37,5 @@ Bool list_empty(pListHead head);
 void list_destroy(pListHead head);
 /* 遍历链表 */
 void list_enum(pListHead head);
+
+#endif
