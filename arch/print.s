@@ -1,4 +1,10 @@
-.extern disp_pos
+.section .bss
+disp_pos:
+		.long	0
+
+
+
+.section .text
 .global print
 
 print:

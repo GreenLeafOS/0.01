@@ -11,8 +11,8 @@ ld_flags			=	-s -Ttext $(entrypoint) -section-start memory=$(memoryinfo) -Map bi
 image		= 	bin/kernel.img
 #------------Ä¿±ê-----------
 boot		=	bin/boot.bin bin/loader.bin
-sub_dir		=	arch
-# micro-kernel kernel kernel-lib lib
+sub_dir		=	arch micro-kernel lib
+#  kernel
 objs 		:= $(foreach path,$(sub_dir),bin/$(path).o)
 
 .PHONY : clean all finalclean

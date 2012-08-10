@@ -6,7 +6,8 @@
  *                     								绿叶-柳暗花明
  ===============================================================*/
 #include "DataStruct.h"
-#include "Lock.h"
+
+#include "lock.h"
 #include "reg.h"
 
 /*==============线程描述符================*/
@@ -111,10 +112,10 @@ inline Result Thread::SetFun(int id,FunAddr save,FunAddr restart)
 	if (thread_addr_table.Get(id,p_thread) != S_OK) return E_NOITEM;
 
 	/* 设置函数 */
-	LOCK()
+	KernelLock();
 		p_thread->thread_info.save_fun = save;
 		p_thread->thread_info.restart_fun = restart;
-	UNLOCK()
+	KernelUnlock();
 
 	return S_OK;
 }

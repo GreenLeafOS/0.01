@@ -76,9 +76,6 @@ void intr_handle();
 extern Gate idt_table[256];
 extern u8 idt_ptr[6];
 
-
-
-
 /*===============================================================
  *                        tss
  *                	  TSS相关处理函数

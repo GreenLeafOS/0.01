@@ -4,6 +4,7 @@
  *                      reg.h
  *                保护、恢复寄存器以及跳转
  ===============================================================*/
+#include <lib/include/type.h>
 
 /*===========线程上下文寄存器结构=============*/
 typedef struct stack_frame {
@@ -36,17 +37,8 @@ typedef struct stack_frame {
 #define PUSH_REG_OFFSET(reg_stack_frame) &reg_stack_frame.reg.eax
 #define POP_REG_OFFSET(reg_stack_frame) &reg_stack_frame.reg.edi
 
-inline void PushReg()
-{
-	asm volatile("pushal");
-}
-
-inline void PopReg()
-{
-	asm volatile("popal");
-}
-
-
+#define PushReg()	__asm volatile("pushal")
+#define PopReg()	__asm volatile("popal")
 /************************************************************************/
 /*                     	段寄存器
 /*                        Seg
@@ -54,26 +46,21 @@ inline void PopReg()
 #define PUSH_SEG_OFFSET(reg_stack_frame) &reg_stack_frame.reg.ds
 #define POP_SEG_OFFSET(reg_stack_frame) &reg_stack_frame.reg.gs
 
-inline void PushSeg()
-{
-	asm volatile(
-				"push %ds		\n"
-				"push %es		\n"
-				"push %fs		\n"
-				"push %gs		\n"
-				);
-}
+#define PushSeg()							\
+	__asm volatile(							\
+				"push %ds		\n"			\
+				"push %es		\n"			\
+				"push %fs		\n"			\
+				"push %gs		\n"			\
+				)
 
-inline void PopSeg()
-{
-	asm volatile(
-				"pop %gs		\n"
-				"pop %fs		\n"
-				"pop %es		\n"
-				"pop %ds		\n"
-				);
-}
-
+#define PopSeg()							\
+	asm volatile(							\
+				"pop %gs		\n"			\
+				"pop %fs		\n"			\
+				"pop %es		\n"			\
+				"pop %ds		\n"			\
+				)
 
 /************************************************************************/
 /*                     	状态寄存器
@@ -82,43 +69,55 @@ inline void PopSeg()
 #define PUSH_FLAGS_OFFSET(reg_stack_frame) ((u32*)&reg_stack_frame.reg.eflags + 1)
 #define POP_FLAGS_OFFSET(reg_stack_frame) &reg_stack_frame.reg.eflags
 
-inline void PushFlags()
-{
-	asm volatile("pushf");
-}
+#define PushFlags()		__asm volatile("pushf")
+#define PopFlags()		__asm volatile("popf")
 
-inline void PopFlags()
-{
-	asm volatile("popf");
-}
 
+#define StoreFlags(eflags)		\
+	__asm volatile( 			\
+		"pushf\n\t"				\
+		"pop %0\n\t"			\
+		: "+m"(eflags)			\
+		:						\
+		: "memory"				\
+        )
+
+
+#define RecoveryFlags(eflags) 	\
+	__asm volatile( 			\
+		"pushl %0\n\t"			\
+		"popf\n\t"				\
+		: 						\
+		: "m"(eflags)			\
+		: "memory"				\
+        )
+
+
+
+/* 关中断 */
+#define CloseInt() 	__asm volatile("cli")
+/* 开中断 */
+#define OpenInt()	__asm volatile("sti")
 /************************************************************************/
 /*                     	  跳转
 /*                        Jmp
 /************************************************************************/
 
 /* 段内转移 */
-inline void JmpNear(u32 eip)
-{
-	asm volatile("jmp *%0" : "=m"(eip));
-}
+#define JmpNear(eip)		__asm volatile("jmp *%0" : "=m"((u32)(eip))
 
 /* 段间无特权级转移 */
-inline void JmpFar(u32 cs,u32 eip)
-{
-	asm volatile("ljmp *%0,*%1" : "=m"(cs),"=m"(eip));
-}
+#define JmpFar(cs,eip)		__asm volatile("ljmp *%0,*%1" : "=m"((u16)(cs)),"=m"((u32)(eip))
+
 
 /* 段间转移。高特权级转移向低特权级 */
-inline void JmpFar(u32 cs,u32 eip,u32 ss,u32 esp)
-{
-	asm volatile(
-				"pushl	%0		\n"
-				"pushl	%1		\n"
-				"pushl	%2		\n"
-				"pushl	%3		\n"
-				"lret			\n"
-				: "=m"(ss),"=m"(esp),"=m"(cs),"=m"(eip)
-				);
-}
+#define JmpDown(cs,eip,ss,esp)				\
+	__asm volatile(							\
+				"pushl	%0		\n"			\
+				"pushl	%1		\n"			\
+				"pushl	%2		\n"			\
+				"pushl	%3		\n"			\
+				"lret			\n"			\
+				: "=m"((u16)(ss)),"=m"((u32)(esp)),"=m"((u16)(cs)),"=m"((u32)(eip))			\
+				)
 #endif

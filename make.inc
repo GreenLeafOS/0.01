@@ -2,15 +2,11 @@ asm					=	as
 asm_flags			=	-I ../arch/include/
 
 cc					=	gcc
-cc_flags			=	-I include/ \
-						-I ../kernel/include -I ../micro-kernel/include \
-						-I ../kernel-lib/include \
-						-I ../arch/include \
-						-c -std=c99
-
+cc_flags			=	-I ../ -c -std=c99
+						
 cpp					=	g++
 cpp_flags			=	-I ../kernel/include -I ../micro-kernel/include \
-						-I ../kernel-lib/include \
+						-I ../lib/include \
 						-I ../arch/include \
 						-c -fno-rtti \
 						-Wwrite-strings

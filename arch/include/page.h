@@ -8,9 +8,7 @@
 #ifndef PAGE_H_
 #define PAGE_H_
 
-#include "type.h"
 #include "memory.h"
-
 
 /* 页表页目录项结构 */
 typedef struct page_entry

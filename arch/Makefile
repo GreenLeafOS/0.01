@@ -6,8 +6,7 @@
 final_obj	=	../bin/arch.o
 
 cpp_objs	=
-cc_objs		=	kernel.c.o			\
-				desc.c.o			\
+cc_objs		=	desc.c.o			\
 				table_gdt.c.o table_ldt.c.o table_idt.c.o \
 				page.c.o memory.c.o \
 				tss.c.o 8259A.c.o

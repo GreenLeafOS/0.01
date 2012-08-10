@@ -2,7 +2,7 @@
  *                       tss.c
  *                	  TSS相关处理函数
  ===============================================================*/
-#include "table.h"
+#include "include/table.h"
 
 TSS tss;
 u16 tss_sel;

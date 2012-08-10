@@ -5,7 +5,7 @@
  *      Author: greenleaf
  */
 
-#include "page.h"
+#include "include/page.h"
 
 /*
  * 在写代码之前，我们先算一笔账。
@@ -126,21 +126,17 @@ void page_init()
 		{
 			((PageTable*)page_tbl)->items[j].p = 1;		// pte项P位设置为1
 			page_link_addr(page_tbl,(i*MAX_PAGE_ENTRY+j)*PAGE_SIZE,j);	// pte项addr设置为物理页框地址
-
 		}
 	}
-	for (int i=0;i<(page_table_size/32)+1;i++)
+
+	/* 保留页表使用的页 */
+	for (int i=0;i<(page_table_size/32);i++)
 	{
-		*(mem_used_map+i) = ~0;
+		*(mem_used_map+i+KERNEL_USED_MEM_ITEM) = 0xffffffff;
 	}
 
 	/* 加载 */
 	page_directory_load((u32)(0x3ff000));
-
-	/* 显示字符串 */
-	char *str = "Setup Paging\n";
-	print(str);
-
 }
 
 

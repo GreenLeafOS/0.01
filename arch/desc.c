@@ -1,8 +1,10 @@
-#include "desc.h"
 /*===============================================================
  *                       desc
  *                	 段描述符相关操作函数
  ===============================================================*/
+#include "include/desc.h"
+
+
 void desc_init(Desc* p_desc,u32 base,u32 limit,u16 attribute)
 {
 	p_desc->base_low = base & 0xFFFF;

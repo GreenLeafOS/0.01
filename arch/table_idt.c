@@ -3,8 +3,8 @@
  * idt相关处理函数
  */
 
-#include "table.h"
-#include "print.h"
+#include "include/table.h"
+#include "include/print.h"
 
 Gate idt_table[256];
 u8 idt_ptr[6];
@@ -78,11 +78,4 @@ void idt_load()
 			"lidt (%%eax)"
 			:
 			: "g"(pIdt));
-}
-
-void intr_handle()
-{
-	char *str = "\nIntr";
-	print(str);
-	while(1);
 }

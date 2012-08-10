@@ -5,7 +5,7 @@
  *      Author: greenleaf
  */
 
-#include "memory.h"
+#include "include/memory.h"
 
 /*
  * 初始化
@@ -34,12 +34,8 @@ void mem_init()
 	mem_used_map =(u32*)0x16000;
 
 	/* 保留4M的内核空间 */
-	for(int i=0;i<MEM_BMP_MB(4);i++)
+	for(int i=0;i<KERNEL_USED_MEM_ITEM;i++)
 		*(mem_used_map + i) = ~0;
-
-	/* 其余设置为0 */
-	for(int i=MEM_BMP_MB(4);i<mem_used_map_max;i++)
-		*(mem_used_map + i) = 0;
 }
 
 
@@ -108,7 +104,7 @@ void* mem_page_alloc()
 			{
 				int index = (i*32)+j;
 				BITSET(mem_used_map,index);
-				return (index*PAGE_SIZE);
+				return (void*)(index*PAGE_SIZE);
 			}
 		}
 	}
