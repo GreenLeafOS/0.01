@@ -118,8 +118,8 @@ extern StackArray msg_stack;
 /* Ïß³Ì */
 BmpArrayDefine(thread_table,KernelThread*,NR_THREAD,extern);
 
-KernelThread*	thread_run;
-ListHead		thread_ready;
-ListHead		thread_sleep;
+extern KernelThread*	thread_run;
+extern ListHead			thread_queue_ready;
+extern ListHead			thread_queue_sleep;
 
 #endif /* KERNEL_H_ */

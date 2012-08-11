@@ -32,7 +32,7 @@ static inline int bmp_search(void *bmp,int max)
 {
 	for(int i=0;i<max;i++)
 	{
-		u32* bmp_int = *(Bmp + i);
+		u32* bmp_int = Bmp + i;
 		if (*bmp_int == 0xffffffff) continue;
 		for(int j=0;j<32;j++)
 		{
