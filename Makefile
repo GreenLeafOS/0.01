@@ -11,7 +11,7 @@ ld_flags			=	-s -Ttext $(entrypoint) -section-start memory=$(memoryinfo) -Map bi
 image		= 	bin/kernel.img
 #------------Ä¿±ê-----------
 boot		=	bin/boot.bin bin/loader.bin
-sub_dir		=	arch micro-kernel lib
+sub_dir		=	micro-kernel arch lib
 #  kernel
 objs 		:= $(foreach path,$(sub_dir),bin/$(path).o)
 

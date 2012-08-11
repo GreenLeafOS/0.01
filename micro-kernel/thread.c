@@ -17,6 +17,17 @@ ListHead		thread_queue_sleep;
 
 
 
+void msg_handel_test_code(MsgHead msg_head)
+{
+	return;
+}
+
+
+void test(MsgHead msg_head)
+{
+	msg_handel_test_code(msg_head);
+}
+
 /*
  * 创建线程
  */
@@ -58,22 +69,43 @@ id_t thread_create(ThreadFun fun,MsgHead msg_head)
 	/* 线程描述符写入在线程空间中 */
 	new_space->thread_info = new_thread;
 
+	MsgHead* stack_msg_head;
 
-	/* 把esp的值设为栈顶并把参数压栈 */
+	/* 把esp的值设为栈顶 */
 	__asm volatile(
-				"pushl %%ebp			\n"
-				"movl %%esp,%%ebp		\n"		/* 保存内核栈esp */
-				"movl (%0),%%esp		\n"		/* esp指向线程栈顶 */
-				"pushl %1				\n"		/* 返回地址入栈 */
-				"pushl %2				\n"		/* 参数：消息头入栈 */
-				"movl %%esp,(%0)		\n"		/* esp保存 */
-				"movl %%ebp,%%esp		\n"		/* 恢复内核栈esp */
-				"popl %%ebp"
-				:
-				:"g"(&new_space->thread_info.stack_top),	/* %0,线程栈esp保存地址 */
-				 "g"(fun),									/* %1,返回地址 */
-				 "g"(msg_head)								/* %2,消息头参数 */
-				);
+			"pushl %%ebp			\n"
+			"movl %%esp,%%ebp		\n"		/* 保存内核栈esp */
+			"movl (%0),%%esp		\n"		/* esp指向线程栈顶 */
+			::"g"(&new_space->thread_info.stack_top)	/* %0,线程栈esp保存地址 */
+			 );
+
+
+
+	/* 参数入栈 */
+	__asm volatile(
+			"subl %2,%%esp			\n"		/* 分配消息头在栈中的空间 */
+
+			"movl %%esp,%%edi		\n"		/* 目的指针 */
+			"movl %0,%%esi			\n"		/* 源指针 */
+			"movl $2,%%ecx			\n"		/* 计数器 */
+			"rep;movsb				\n"		/* 重复传送 */
+
+			"pushl %1				\n"		/* 返回地址入栈 */
+			::"g"(&msg_head),				/* %0,消息头指针 */
+			"g"(fun),						/* %1,返回地址 */
+			"g"(sizeof(msg_head))			/* %2,消息头大小 */
+			);
+
+
+
+	/* 保存线程esp，恢复内核esp */
+	__asm volatile(
+			"movl %%esp,(%0)		\n"		/* esp保存 */
+			"movl %%ebp,%%esp		\n"		/* 恢复内核栈esp */
+			"popl %%ebp"
+			:
+			:"g"(&new_space->thread_info.stack_top)	/* %0,线程栈esp保存地址 */
+			);
 
 	return id;
 }
