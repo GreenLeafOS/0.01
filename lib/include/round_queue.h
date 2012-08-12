@@ -48,11 +48,12 @@ static inline RoundQueue round_queue_init(u16 max,u16 size,point array)
 	return data;
 }
 
-static inline Result round_queue_add(RoundQueue *data,point value)
+static inline Result round_queue_add(RoundQueue *data,...)
 {
+	u8* p = ((u8*)&data)+sizeof(data);
 	if ((Tail+1)%Max == Head) return E_MAX;
 	Tail = (Tail + 1) % Max;
-	memcpy(Array + Tail*Size,value,Size);
+	memcpy(Array + Tail*Size,p,Size);
 }
 
 static inline point round_queue_delete(RoundQueue *data)

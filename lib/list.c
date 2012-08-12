@@ -7,14 +7,16 @@
 
 #include "include/list.h"
 
-
 /*
  * 双链表初始化
  * */
 void list_init(ListHead *head)
 {
-	head->prev = NULL;
-	head->next = NULL;
+	if (head)
+	{
+		head->prev = (ListNode*)head;
+		head->next = (ListNode*)head;
+	}
 	return;
 }
 
@@ -25,22 +27,19 @@ void list_init(ListHead *head)
  * */
 Bool list_add(ListHead *head,ListNode *node)
 {
-	if(head == NULL)
+	if(head && head->next && node)
 	{
-		return False;
-	}
-	if(head->next == NULL)
-	{
+		/* 新节点和头节点的后节点建立链接 */
+		node->next = head->next;
+		head->next->prev = node;
+
+		/* 新节点和头节点建立链接 */
 		node->prev = (ListNode*)head;
-		node->next = NULL;
 		head->next = node;
+
 		return True;
 	}
-	node->prev =(ListNode*)head;	/* 加入指针的前指针为头指针 */
-	node->next = head->next;		/* 加入指针的后指针为头指针的后指针 */
-	head->next->prev = node;		/* 头指针的后指针的前指针为加入指针 */
-	head->next = node;				/* 头指针的后指针变为加入指针 */
-	return True;
+	return False;
 }
 
 
@@ -52,11 +51,16 @@ Bool list_add(ListHead *head,ListNode *node)
 ListNode* list_search(ListHead *head,int index)
 {
 	ListNode *node;
+	if(head == NULL) return NULL;
+
+	/* 遍历链表 */
 	for(node=head->next;index > 0;index--)
 	{
-		if(node == NULL) return NULL;
 		node = node->next;
+
+		if(node == NULL || node == (ListNode*)head) return NULL;
 	}
+
 	return node;
 }
 
@@ -69,15 +73,21 @@ ListNode* list_search(ListHead *head,int index)
 Bool list_insert(ListHead *head,ListNode *node,int index)
 {
 	ListNode *old_node = list_search(head,index);
-	if (old_node == NULL) return False;
-    node->next = old_node->next;
-    node->prev = old_node;
-	if (old_node->next != NULL)
+
+	/* 测试指针是否有效 */
+	if (head && old_node && node && old_node->next)
 	{
+		/* 新节点和旧节点的后节点建立链接 */
+		node->next = old_node->next;
 		old_node->next->prev = node;
-    }
-	old_node->next = node;
-    return True;
+
+		/* 新节点和旧节点建立链接 */
+		node->prev = old_node;
+		old_node->next = node;
+
+		return True;
+	}
+	return False;
 }
 
 
@@ -87,17 +97,12 @@ Bool list_insert(ListHead *head,ListNode *node,int index)
  * */
 void list_unlink(ListNode *node)
 {
-	if (node->prev != NULL)
+	if (node && node->next && node->prev)
 	{
 		node->prev->next = node->next;	/* 后一个元素的前指针指向前一个元素 */
-		return;
-	}
-	if (node->next != NULL)
-	{
 		node->next->prev = node->prev;	/* 前一个元素的后指针指向后一个元素 */
-		return;
 	}
-    return ;
+	return;
 }
 
 
@@ -107,9 +112,12 @@ void list_unlink(ListNode *node)
 Bool list_delete(ListHead *head,int index)
 {
 	ListNode *old_node = list_search(head,index);
-	if (old_node == NULL) return False;
-	list_unlink(old_node);
-	return True;
+	if (old_node)
+	{
+		list_unlink(old_node);
+		return True;
+	}
+	return False;
 }
 
 
@@ -119,5 +127,13 @@ Bool list_delete(ListHead *head,int index)
  * */
 Bool list_empty(ListHead *head)
 {
-    return head->next == NULL?True:False;
+	if (head == NULL) return True;
+
+	Bool isnull = (head->next == NULL || head->prev == NULL);
+	Bool isempty = (head->next == (ListNode*)head && head->next == (ListNode*)head);
+
+	if (isnull || isempty)
+		return True;
+	else
+		return False;
 }

@@ -7,8 +7,8 @@ idt_ptr             0x6               bin/arch.o
 msg_reg_table       0x1200            bin/micro-kernel.o
 thread_table        0x80              bin/micro-kernel.o
 tss                 0x6c              bin/arch.o
-thread_queue_ready  0x4               bin/micro-kernel.o
-thread_queue_sleep  0x4               bin/micro-kernel.o
+thread_queue_ready  0x8               bin/micro-kernel.o
+thread_queue_sleep  0x8               bin/micro-kernel.o
 thread_run          0x4               bin/micro-kernel.o
 gdt_ptr             0x6               bin/arch.o
 thread_table_data   0x4               bin/micro-kernel.o
@@ -100,7 +100,7 @@ LOAD bin/lib.o
  *(.iplt)
  .iplt          0x0000000000000000        0x0 bin/micro-kernel.o
 
-.text           0x0000000000100000     0x1335
+.text           0x0000000000100000     0x14cd
  *(.text.unlikely .text.*_unlikely)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
@@ -160,15 +160,22 @@ LOAD bin/lib.o
                 0x00000000001011f9                tss_load
                 0x000000000010122e                init_8259A
  *fill*         0x00000000001012fe        0x2 90909090
- .text          0x0000000000101300       0x35 bin/lib.o
+ .text          0x0000000000101300      0x1cd bin/lib.o
                 0x0000000000101300                memcpy
+                0x0000000000101338                list_init
+                0x0000000000101350                list_add
+                0x00000000001013b7                list_search
+                0x00000000001013eb                list_insert
+                0x0000000000101449                list_unlink
+                0x0000000000101481                list_delete
+                0x00000000001014bb                list_empty
  *(.gnu.warning)
 
 .fini
  *(.fini)
-                0x0000000000101335                PROVIDE (__etext, .)
-                0x0000000000101335                PROVIDE (_etext, .)
-                0x0000000000101335                PROVIDE (etext, .)
+                0x00000000001014cd                PROVIDE (__etext, .)
+                0x00000000001014cd                PROVIDE (_etext, .)
+                0x00000000001014cd                PROVIDE (etext, .)
 
 .rodata
  *(.rodata .rodata.* .gnu.linkonce.r.*)
@@ -179,21 +186,21 @@ LOAD bin/lib.o
 .eh_frame_hdr
  *(.eh_frame_hdr)
 
-.eh_frame       0x0000000000101338      0x774
+.eh_frame       0x00000000001014d0      0x854
  *(.eh_frame)
- .eh_frame      0x0000000000101338      0x244 bin/micro-kernel.o
+ .eh_frame      0x00000000001014d0      0x244 bin/micro-kernel.o
                                         0x28c (size before relaxing)
- .eh_frame      0x000000000010157c      0x510 bin/arch.o
+ .eh_frame      0x0000000000101714      0x510 bin/arch.o
                                         0x5d0 (size before relaxing)
- .eh_frame      0x0000000000101a8c       0x20 bin/lib.o
-                                         0x38 (size before relaxing)
+ .eh_frame      0x0000000000101c24      0x100 bin/lib.o
+                                        0x130 (size before relaxing)
 
 .gcc_except_table
  *(.gcc_except_table .gcc_except_table.*)
 
 .exception_ranges
  *(.exception_ranges .exception_ranges*)
-                0x0000000000101aac                . = (ALIGN (0x1000) - ((0x1000 - .) & 0xfff))
+                0x0000000000101d24                . = (ALIGN (0x1000) - ((0x1000 - .) & 0xfff))
                 0x0000000000102000                . = DATA_SEGMENT_ALIGN (0x1000, 0x1000)
 
 .eh_frame
@@ -288,14 +295,14 @@ LOAD bin/lib.o
  .bss           0x00000000001020a4        0x0 bin/lib.o
  *(COMMON)
  *fill*         0x00000000001020a4       0x1c 00
- COMMON         0x00000000001020c0     0x1290 bin/micro-kernel.o
+ COMMON         0x00000000001020c0     0x1298 bin/micro-kernel.o
                 0x00000000001020c0                msg_reg_table
                 0x00000000001032c0                thread_table
                 0x0000000000103340                thread_queue_ready
-                0x0000000000103344                thread_queue_sleep
-                0x0000000000103348                thread_run
-                0x000000000010334c                thread_table_data
- *fill*         0x0000000000103350       0x10 00
+                0x0000000000103348                thread_queue_sleep
+                0x0000000000103350                thread_run
+                0x0000000000103354                thread_table_data
+ *fill*         0x0000000000103358        0x8 00
  COMMON         0x0000000000103360      0x9e0 bin/arch.o
                 0x0000000000103360                gdt_table
                 0x0000000000103460                idt_ptr
@@ -335,7 +342,7 @@ LOAD bin/lib.o
  .comment       0x0000000000000000       0x2a bin/micro-kernel.o
                                          0xac (size before relaxing)
  .comment       0x0000000000000000      0x158 bin/arch.o
- .comment       0x0000000000000000       0x2b bin/lib.o
+ .comment       0x0000000000000000       0x56 bin/lib.o
 
 .debug
  *(.debug)

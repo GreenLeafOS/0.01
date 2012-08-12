@@ -8,6 +8,8 @@
 #include <lib/include/type.h>
 #include <lib/include/string.h>
 
+
+
 // 栈数组数据结构
 typedef struct stack_array
 {
@@ -39,12 +41,13 @@ static inline StackArray stack_array_init(point array,u16 max,u16 size)
 }
 
 /* 添加项 */
-static inline int stack_array_add(StackArray *data,point value)
+static inline int stack_array_add(StackArray *data,...)
 {
 	int id = data->count;
+	u8* p = ((u8*)&data)+sizeof(data);		// 可变参数在栈中的地址
 	if (++data->count < data->max)
 	{
-		memcpy(data->array + id*data->size,value,data->size);
+		memcpy(data->array + id*data->size,p,data->size);
 		return id;
 	}
 	return E_MAX;
@@ -53,9 +56,9 @@ static inline int stack_array_add(StackArray *data,point value)
 /* 删除项 */
 static inline point stack_array_delete(StackArray *data)
 {
-	if (data->count)
+	if (data->count > 0)
 	{
-		return (point)(data->array + data->count--);
+		return (point)(data->array + --data->count*data->size);
 	}
 	else
 	{
