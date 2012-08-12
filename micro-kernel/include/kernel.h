@@ -103,7 +103,15 @@ int 	msg_register(id_t mod_id,u16 msg_type);
 Bool 	msg_post(MsgHead msg_head);
 MsgHead msg_recv();
 
-
+/* 中断处理函数 */
+FunAddr	intr_handle(int irq_num);
+/* 异常处理函数 */
+FunAddr exception_handler(int vec_num, int err_code);
+/* 初始化中断异常 */
+void idt_kernel_init();
+/* 汇编函数 */
+void save();
+void restart();
 /************************************************************************/
 /*							内核数据
 /*							data
