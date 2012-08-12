@@ -25,6 +25,6 @@ void init_8259A()
 	outb(INT_M_CTLMASK,	0x1);				// Master 8259, ICW4. 00000001	8086模式,正常EOI
 	outb(INT_S_CTLMASK,	0x1);				// Slave  8259, ICW4. 00000001
 
-	outb(INT_M_CTLMASK,	0xFF);				// Master 8259, OCW1. 11111111
-	outb(INT_S_CTLMASK,	0xFF);				// Slave  8259, OCW1. 11111111
+	outb(INT_M_CTLMASK,	0x0);				// Master 8259, OCW1. 11111111
+	outb(INT_S_CTLMASK,	0x0);				// Slave  8259, OCW1. 11111111
 }

@@ -15,6 +15,7 @@ StackArray msg_stack = {REG_TABLE_ITEM_MAX,sizeof(id_t),0,(u8*)&msg_reg_table};
 
 /*
  * 发送消息
+ * msg_head.receiver 0 表示广播消息
  */
 id_t msg_send(MsgHead msg_head)
 {

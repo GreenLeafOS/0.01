@@ -72,7 +72,7 @@ EOI				=	0x20
 	call	save					/* 保存上下文 */
 
 	inb		$INT_S_CTLMASK,%al
-	orb		(1 << \irq_num),%al
+	orb		(1 << (\irq_num-8)),%al
 	outb	%al,$INT_S_CTLMASK		/* 屏蔽当前中断 */
 
 	movb	$EOI,%al
@@ -89,7 +89,7 @@ EOI				=	0x20
 	pushl	%eax					/* 压入restart断点(由intr_handle 返回) */
 
 	inb		$INT_M_CTLMASK,%al
-	andb	$(~(1 << \irq_num)),%al
+	andb	$(~(1 << (\irq_num-8))),%al
 	outb	%al,$INT_M_CTLMASK		/* 恢复相应当前中断 */
 
 	jmp		thread_schedule			/* 调用调度函数 */

@@ -46,43 +46,32 @@ id_t thread_create(ThreadFun fun,MsgHead msg_head)
 	new_thread.id = id;
 	new_thread.flags = THREAD_STATE_READY;
 	new_thread.priority = msg_head.priority;		// 暂时继承消息的优先级
-	new_thread.stack_top = new_space->stack[1023];	// 栈顶
-
-
-	/* 并在就绪线程链表中添加一个项 */
-	// list_add(&thread_ready,&new_space->thread_info.node);
-
+	new_thread.stack_top = (u32)(((u8*)(&new_space->stack[1023])) - msg_head.body_size);	// 栈顶(开辟了消息体的空间)
 
 	/* 线程描述符写入在线程空间中 */
 	new_space->thread_info = new_thread;
 
+	/* 在就绪线程链表中添加一个项 */
+	list_add(&thread_queue_ready,&new_space->thread_info.node);
 
-	__asm volatile(
-			/* 把esp的值设为线程栈顶 */
-			"pushl %%ebp			\n"
-			"movl %%esp,%%ebp		\n"		/* 保存内核栈esp */
-			"movl (%0),%%esp		\n"		/* esp指向线程栈顶 */
 
-			/* 参数入栈 */
-			"subl %3,%%esp			\n"		/* 分配消息头在栈中的空间 */
+	/* 消息体入栈并将消息体指针指向栈中数据 */
+	msg_head.body_point = memcpy(
+			(void*)new_space->thread_info.stack_top,	// dst
+			(void*)msg_head.body_point,				// src
+			msg_head.body_size);				// size
 
-			"movl %%esp,%%edi		\n"		/* 目的指针 */
-			"movl %1,%%esi			\n"		/* 源指针 */
-			"movl $3,%%ecx			\n"		/* 计数器 */
-			"rep;movsb				\n"		/* 重复传送 */
+	/* 消息头入栈 */
+	new_space->thread_info.stack_top - sizeof(msg_head);
+	memcpy((void*)new_space->thread_info.stack_top,	// dst
+			(void*)&msg_head,							// src
+			sizeof(msg_head));					// size
 
-			"pushl %2				\n"		/* 返回地址入栈 */
-
-			/* 保存线程esp，恢复内核esp */
-			"movl %%esp,(%0)		\n"		/* esp保存 */
-			"movl %%ebp,%%esp		\n"		/* 恢复内核栈esp */
-			"popl %%ebp"
-
-			::"g"(&new_space->thread_info.stack_top),	/* %0,线程栈esp保存地址 */
-			 "g"(&msg_head),				/* %1,消息头指针 */
-			 "g"(fun),						/* %2,返回地址 */
-			 "g"(sizeof(msg_head))			/* %3,消息头大小 */
-			 );
+	/* 返回地址入栈 */
+	new_space->thread_info.stack_top - sizeof(fun);
+	memcpy((void*)new_space->thread_info.stack_top,	// dst
+			(void*)&fun,								// src
+			sizeof(fun));						// size
 
 	return id;
 }
@@ -91,13 +80,13 @@ id_t thread_create(ThreadFun fun,MsgHead msg_head)
 int thread_sleep(id_t id)
 {
 	KernelThread* thread;
-	if (!(BITTEST(thread_table_data,id))) return E_NOITEM;
+	if (!(bmp_test(thread_table_data,id))) return E_NOITEM;
 	thread = thread_table[id];
 
 	/* 如果处于运行态,保存上下文,（通过调用Save()函数） */
 	if (thread_run->thread_info.id == id)
 	{
-		// Save
+		// Save();
 		thread_run = NULL;
 		thread_schedule();
 	}
@@ -106,10 +95,10 @@ int thread_sleep(id_t id)
 	thread->thread_info.flags = THREAD_STATE_SLEEPING;
 
 	/* 从就绪队列移除 */
-//	list_delete(&thread_queue_ready,&thread);
+	list_unlink(&thread->thread_info.node);
 
 	/* 加入睡眠队列 */
-//	list_add(&thread_queue_sleep,&thread);
+	list_add(&thread_queue_sleep,&thread->thread_info.node);
 
 }
 
@@ -124,10 +113,10 @@ int thread_wake(id_t id)
 	thread->thread_info.flags = THREAD_STATE_READY;
 
 	/* 从睡眠队列中移除 */
-//	list_delete(&thread_queue_sleep,&thread);
+	list_unlink(&thread->thread_info.node);
 
 	/* 加入就绪队列 */
-//	list_add(&thread_queue_ready,&thread);
+	list_add(&thread_queue_ready,&thread->thread_info.node);
 
 }
 
@@ -135,13 +124,20 @@ int thread_wake(id_t id)
 int thread_kill(id_t id)
 {
 	/* 把线程从线程地址表中移除 */
-	// thread_addr_table.Delete(id);
+	bmp_clear(&thread_table_data,id);
 
 	/* 把线程从任何一个队列中移除 */
+	list_unlink(&thread_table[id]->thread_info.node);
 
 	/* 发送广播消息，通知各个部件撤销资源*/
-	// SendMessage(MOD_FREE_SOURCE,&id);
-	/* 未完成 */
+	MsgHead msg = {MSG_THREAD_KILL,	// type
+			MSG_PRIORITY_REALTIME,	// priority
+			id,						// sender
+			0,						// receiver
+			NULL,					// body_point
+			0};						// body_size
+
+	msg_handle(msg);
 }
 
 void thread_schedule()

@@ -5,9 +5,26 @@
  *      Author: greenleaf
  */
 
- .global	save
- .global	restart
+.global	save
+.global	restart
 
- save:
+.global	restart_from_exception		/* ¥”“Ï≥£∑µªÿ */
 
- restart:
+.extern ret_addr
+
+save:
+	popl	(ret_addr)
+	pushal
+	push 	%ds
+	push 	%es
+	push	%fs
+	push 	%gs
+	jmp		*(ret_addr)
+
+restart:
+	pop		%gs
+	pop		%fs
+	pop		%es
+	pop		%ds
+	popal
+	iret

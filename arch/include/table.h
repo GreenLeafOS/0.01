@@ -69,10 +69,6 @@ void idt_init_task(int index,FunAddr handle,u8 dpl);
 /* 加载idt */
 void idt_load();
 
-/* 中断异常处理程序 */
-void error_handle();
-void intr_handle();
-
 extern Gate idt_table[256];
 extern u8 idt_ptr[6];
 

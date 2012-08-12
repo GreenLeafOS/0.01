@@ -8,6 +8,7 @@
 .extern		thread_schedule
 .extern		exception_handler
 .extern		save
+.extern		err_code
 
 .global	divide_error
 .global	single_step_exception
@@ -31,7 +32,9 @@
  * 异常处理
  */
 .macro exception vec_num
+	popl	(err_code)
 	call	save
+	pushl	(err_code)
 	pushl	\vec_num
 	call	exception_handler
 	addl	$8,%esp					/* 清理堆栈 */

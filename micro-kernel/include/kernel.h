@@ -10,10 +10,14 @@
 
 #include <lib/include/stack_array.h>
 #include <lib/include/round_queue.h>
-#include <lib/include/bmp.h>
+#include <lib/include/setbit.h>
 #include <lib/include/list.h>
+
 #include <arch/include/lock.h>
 #include <arch/include/memory.h>
+#include <arch/include/table.h>
+
+#include "msg.h"
 /************************************************************************/
 /*							内核对象
 /*							object
@@ -108,7 +112,7 @@ FunAddr	intr_handle(int irq_num);
 /* 异常处理函数 */
 FunAddr exception_handler(int vec_num, int err_code);
 /* 初始化中断异常 */
-void idt_kernel_init();
+void idt_init();
 /* 汇编函数 */
 void save();
 void restart();
