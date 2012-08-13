@@ -5,11 +5,18 @@
  *      Author: greenleaf
  */
 
+INT_M_CTL		=	0x20	/* I/O port for interrupt controller         <Master> */
+INT_M_CTLMASK	=	0x21	/* setting bits in this port disables ints   <Master> */
+INT_S_CTL		=	0xA0	/* I/O port for second interrupt controller  <Slave> */
+INT_S_CTLMASK	=	0xA1	/* setting bits in this port disables ints   <Slave> */
+
+EOI				=	0x20
+
 .extern		thread_schedule
 .extern		save
 .extern		intr_handle
 .extern 	thread_run_stack_top
-.extern		kernel_reenter
+
 
 .global		hwint00
 .global		hwint01
@@ -29,27 +36,15 @@
 .global		hwint15
 
 
-
-INT_M_CTL		=	0x20	/* I/O port for interrupt controller         <Master> */
-INT_M_CTLMASK	=	0x21	/* setting bits in this port disables ints   <Master> */
-INT_S_CTL		=	0xA0	/* I/O port for second interrupt controller  <Slave> */
-INT_S_CTLMASK	=	0xA1	/* setting bits in this port disables ints   <Slave> */
-
-EOI				=	0x20
 /*
  * 主8259A的中断
  */
 .macro hwint_master irq_num
-
-	/* 保存上下文 */
-	pushal
-	push 	%ds
-	push 	%es
-	push	%fs
-	push 	%gs
-
-	/* 保存esp */
-	movl	%esp,(thread_run_stack_top)
+	/* 如果没有重入，则保存寄存器在线程的内核态栈 */
+	/* 如果重入，则保存在内核栈 */
+	/* save函数会压入一个返回地址，如果重入，则是restart_reenter */
+	/* 如果没重入，则先压入restart，再压入调度函数thread_schedule */
+	call	save
 
 	/* 屏蔽当前中断 */
 	inb		$INT_M_CTLMASK,%al
@@ -65,16 +60,16 @@ EOI				=	0x20
 	call	intr_handle
 	popl	%ecx					/* 调用者清理堆栈 */
 
-	/* 压入restart断点(由intr_handle 返回) */
-	pushl	%eax
-
 	/* 恢复响应当前中断 */
 	inb		$INT_M_CTLMASK,%al
 	andb	$(~(1 << \irq_num)),%al
 	outb	%al,$INT_M_CTLMASK
 
-	/* 调用调度函数 */
-	jmp		thread_schedule
+	/* 根据栈顶地址进行跳转 */
+	/* 如果中断重入，则返回压入的restart_reenter */
+	/* 如果没有中断重入，在每个线程的内核栈顶都有一个restart的指针 */
+	/* 调度函数返回时esp指向相应线程栈，进入restart，弹出相应线程的寄存器，恢复运行 */
+	ret
 .endm
 
 
