@@ -131,7 +131,11 @@ extern StackArray msg_stack;
 BmpArrayDefine(thread_table,KernelThread*,NR_THREAD,extern);
 
 extern KernelThread*	thread_run;
+extern u32*				thread_run_stack_top;
 extern ListHead			thread_queue_ready;
 extern ListHead			thread_queue_sleep;
+
+/* ÄÚºË */
+extern int	kernel_reenter;
 
 #endif /* KERNEL_H_ */

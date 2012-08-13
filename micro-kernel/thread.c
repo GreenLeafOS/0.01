@@ -12,6 +12,7 @@
 BmpArrayDefine(thread_table,KernelThread*,NR_THREAD,);
 
 KernelThread*	thread_run;
+u32* 			thread_run_stack_top;
 ListHead		thread_queue_ready;
 ListHead		thread_queue_sleep;
 
@@ -58,38 +59,30 @@ id_t thread_create(ThreadFun fun,MsgHead msg_head)
 	/* 消息体入栈并将消息体指针指向栈中数据 */
 	msg_head.body_point = memcpy(
 			(void*)new_space->thread_info.stack_top,	// dst
-			(void*)msg_head.body_point,				// src
-			msg_head.body_size);				// size
+			(void*)msg_head.body_point,					// src
+			msg_head.body_size);						// size
 
 	/* 消息头入栈 */
 	new_space->thread_info.stack_top - sizeof(msg_head);
-	memcpy((void*)new_space->thread_info.stack_top,	// dst
+	memcpy((void*)new_space->thread_info.stack_top,		// dst
 			(void*)&msg_head,							// src
-			sizeof(msg_head));					// size
+			sizeof(msg_head));							// size
 
 	/* 返回地址入栈 */
 	new_space->thread_info.stack_top - sizeof(fun);
-	memcpy((void*)new_space->thread_info.stack_top,	// dst
+	memcpy((void*)new_space->thread_info.stack_top,		// dst
 			(void*)&fun,								// src
-			sizeof(fun));						// size
+			sizeof(fun));								// size
 
 	return id;
 }
 
 
-int thread_sleep(id_t id)
+int thread_sleep_handle(id_t id)
 {
 	KernelThread* thread;
 	if (!(bmp_test(thread_table_data,id))) return E_NOITEM;
 	thread = thread_table[id];
-
-	/* 如果处于运行态,保存上下文,（通过调用Save()函数） */
-	if (thread_run->thread_info.id == id)
-	{
-		// Save();
-		thread_run = NULL;
-		thread_schedule();
-	}
 
 	/* 把线程的状态设为睡眠态 */
 	thread->thread_info.flags = THREAD_STATE_SLEEPING;
@@ -100,6 +93,12 @@ int thread_sleep(id_t id)
 	/* 加入睡眠队列 */
 	list_add(&thread_queue_sleep,&thread->thread_info.node);
 
+	/* 如果处于运行态,保存上下文,（通过调用Save()函数） */
+	if (thread_run->thread_info.id == id)
+	{
+		return 0;
+	}
+	return 1;
 }
 
 
@@ -142,5 +141,5 @@ int thread_kill(id_t id)
 
 void thread_schedule()
 {
-
+	Open_Int();
 }

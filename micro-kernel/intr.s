@@ -8,7 +8,8 @@
 .extern		thread_schedule
 .extern		save
 .extern		intr_handle
-
+.extern 	thread_run_stack_top
+.extern		kernel_reenter
 
 .global		hwint00
 .global		hwint01
@@ -39,28 +40,41 @@ EOI				=	0x20
  * 主8259A的中断
  */
 .macro hwint_master irq_num
-	call	save					/* 保存上下文 */
 
+	/* 保存上下文 */
+	pushal
+	push 	%ds
+	push 	%es
+	push	%fs
+	push 	%gs
+
+	/* 保存esp */
+	movl	%esp,(thread_run_stack_top)
+
+	/* 屏蔽当前中断 */
 	inb		$INT_M_CTLMASK,%al
 	orb		$(1 << \irq_num),%al
-	outb	%al,$INT_M_CTLMASK		/* 屏蔽当前中断 */
+	outb	%al,$INT_M_CTLMASK
 
+	/* 重新打开主8259A */
 	movb	$EOI,%al
-	outb	%al,$INT_M_CTL			/* 重新打开主8259A */
+	outb	%al,$INT_M_CTL
 
-	sti								/* 开中断 */
+	/* 调用中断处理函数 */
 	pushl	\irq_num				/* irq */
 	call	intr_handle
 	popl	%ecx					/* 调用者清理堆栈 */
-	cli								/* 关中断 */
 
-	pushl	%eax					/* 压入restart断点(由intr_handle 返回) */
+	/* 压入restart断点(由intr_handle 返回) */
+	pushl	%eax
 
+	/* 恢复响应当前中断 */
 	inb		$INT_M_CTLMASK,%al
 	andb	$(~(1 << \irq_num)),%al
-	outb	%al,$INT_M_CTLMASK		/* 恢复相应当前中断 */
+	outb	%al,$INT_M_CTLMASK
 
-	jmp		thread_schedule			/* 调用调度函数 */
+	/* 调用调度函数 */
+	jmp		thread_schedule
 .endm
 
 
@@ -69,7 +83,16 @@ EOI				=	0x20
  * 从8259A的中断
  */
 .macro hwint_slave irq_num
-	call	save					/* 保存上下文 */
+
+	/* 保存上下文 */
+	pushal
+	push 	%ds
+	push 	%es
+	push	%fs
+	push 	%gs
+
+	/* 保存esp */
+	movl	%esp,(thread_run_stack_top)
 
 	inb		$INT_S_CTLMASK,%al
 	orb		(1 << (\irq_num-8)),%al
@@ -138,32 +161,32 @@ hwint07:		/* Interrupt routine for irq 7 (printer) */
  */
 .align	16
 hwint08:		/* Interrupt routine for irq 8 (realtime clock) */
-	hwint_slave	8
+	hwint_slave		8
 
 .align	16
 hwint09:		/* Interrupt routine for irq 9 (irq 2 redirected) */
-	hwint_slave	9
+	hwint_slave		9
 
 .align	16
 hwint10:		/* Interrupt routine for irq 10 */
-	hwint_slave	10
+	hwint_slave		10
 
 .align	16
 hwint11:		/* Interrupt routine for irq 11 */
-	hwint_slave	11
+	hwint_slave		11
 
 .align	16
 hwint12:		/* Interrupt routine for irq 12 */
-	hwint_slave	12
+	hwint_slave		12
 
 .align	16
 hwint13:		/* Interrupt routine for irq 13 (FPU exception) */
-	hwint_slave	13
+	hwint_slave		13
 
 .align	16
 hwint14:		/* Interrupt routine for irq 14 (AT winchester) */
-	hwint_slave	14
+	hwint_slave		14
 
 .align	16
 hwint15:		/* Interrupt routine for irq 15 */
-	hwint_slave	15
+	hwint_slave		15

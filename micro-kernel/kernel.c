@@ -5,6 +5,10 @@
  *      Author: greenleaf
  */
 
+
+int	kernel_reenter;
+
+
 void KernelMain()
 {
 	__asm("nop");
