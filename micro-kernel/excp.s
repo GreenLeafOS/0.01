@@ -5,10 +5,7 @@
  *      Author: greenleaf
  */
 
-.extern		thread_schedule
-.extern		exception_handler
-.extern		save
-.extern		err_code
+.include 	"include/head.s"
 
 .global	divide_error
 .global	single_step_exception
@@ -27,21 +24,6 @@
 .global	page_fault
 .global	copr_error
 
-
-/*
- * 异常处理
- */
-.macro exception vec_num
-	popl	(err_code)
-	call	save
-	pushl	(err_code)
-	pushl	\vec_num
-	call	exception_handler
-	addl	$8,%esp					/* 清理堆栈 */
-	popl	%ecx
-	pushl	%eax					/* 压入restart断点(由exception_handler 返回) */
-	jmp		thread_schedule			/* 调用调度函数 */
-.endm
 
 divide_error:
 	pushl	$0xFFFFFFFF

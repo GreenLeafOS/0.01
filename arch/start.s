@@ -15,6 +15,8 @@ _start:
 	mov		%ax,%ds
 	mov		%ax,%es
 	mov		%ax,%fs
+	mov		%ax,%ss
+
 	mov		$40,%ax
 	mov		%ax,%gs
 

@@ -11,7 +11,7 @@ ld_flags			=	-s -Ttext $(entrypoint) -section-start memory=$(memoryinfo) -Map bi
 image		= 	bin/kernel.img
 #------------目标-----------
 boot		=	bin/boot.bin bin/loader.bin
-sub_dir		=	micro-kernel arch lib
+sub_dir		=	arch micro-kernel lib
 #  kernel
 objs 		:= $(foreach path,$(sub_dir),bin/$(path).o)
 
@@ -26,7 +26,7 @@ all : finalclean $(objs) $(boot) $(image)
 	@echo "Writing image..."
 	@dd conv=notrunc of=bin/kernel.img bs=512 count=1 if=bin/boot.bin 
 	@dd conv=notrunc of=bin/kernel.img bs=512 count=2 if=bin/loader.bin seek=1
-	@dd conv=notrunc of=bin/kernel.img bs=512 count=16 if=bin/kernel.bin seek=3
+	@dd conv=notrunc of=bin/kernel.img bs=512 count=69 if=bin/kernel.bin seek=3
 	
 
 # 循环调用子目录中的makefile	

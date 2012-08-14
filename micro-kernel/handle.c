@@ -7,43 +7,7 @@
 
 
 #include "include/kernel.h"
-
-
-/* 中断异常处理函数 */
-void	divide_error();
-void	single_step_exception();
-void	nmi();
-void	breakpoint_exception();
-void	overflow();
-void	bounds_check();
-void	inval_opcode();
-void	copr_not_available();
-void	double_fault();
-void	copr_seg_overrun();
-void	inval_tss();
-void	segment_not_present();
-void	stack_exception();
-void	general_protection();
-void	page_fault();
-void	copr_error();
-
-void	hwint00();
-void	hwint01();
-void	hwint02();
-void	hwint03();
-void	hwint04();
-void	hwint05();
-void	hwint06();
-void	hwint07();
-void	hwint08();
-void	hwint09();
-void	hwint10();
-void	hwint11();
-void	hwint12();
-void	hwint13();
-void	hwint14();
-void	hwint15();
-
+#include "include/handle.h"
 
 
 int	err_code;
@@ -87,6 +51,9 @@ void idt_init()
 	idt_init_intr(MSG_INTR + 13,	hwint13,				0);
 	idt_init_intr(MSG_INTR + 14,	hwint14,				0);
 	idt_init_intr(MSG_INTR + 15,	hwint15,				0);
+
+	idt_load();
+	return;
 }
 
 
@@ -97,9 +64,9 @@ void idt_init()
  * 		irq_num	中断号
  * 返回值：对应restart的地址
  * */
-FunAddr intr_handle(int irq_num)
+void intr_handle(int irq_num)
 {
-	return restart;
+	return;
 }
 
 
@@ -110,7 +77,7 @@ FunAddr intr_handle(int irq_num)
  * 		err_code 错误码
  * 返回值：对应restart的地址
  * */
-FunAddr exception_handler(int vec_num, int err_code)
+void exception_handler(int vec_num, int err_code)
 {
-	return restart;
+	return;
 }

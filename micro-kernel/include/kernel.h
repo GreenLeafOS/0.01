@@ -108,14 +108,13 @@ Bool 	msg_post(MsgHead msg_head);
 MsgHead msg_recv();
 
 /* 中断处理函数 */
-FunAddr	intr_handle(int irq_num);
+void	intr_handle(int irq_num);
 /* 异常处理函数 */
-FunAddr exception_handler(int vec_num, int err_code);
+void	exception_handler(int vec_num, int err_code);
 /* 初始化中断异常 */
-void idt_init();
+void 	idt_init();
 /* 汇编函数 */
-void save();
-void restart();
+void 	save();
 /************************************************************************/
 /*							内核数据
 /*							data

@@ -15,11 +15,13 @@ u8 idt_ptr[6];
 void idt_set(int index,Gate item)
 {
 	idt_table[index] = item;
+	return;
 }
 
 void idt_get(int index,Gate *item)
 {
 	*item = idt_table[index];
+	return;
 }
 /************************************************************************/
 /*						初始化门描述符
@@ -30,24 +32,28 @@ void idt_get(int index,Gate *item)
 void idt_init_call(int index,FunAddr handle,u8 dpl)
 {
 	idt_table[index] = gate_create((u32)handle,0x8,DA_386CGate | dpl,0);
+	return;
 }
 
 /* 中断门 */
 void idt_init_intr(int index,FunAddr handle,u8 dpl)
 {
 	idt_table[index] = gate_create((u32)handle,0x8,DA_386IGate | dpl,0);
+	return;
 }
 
 /* 陷阱门 */
 void idt_init_trap(int index,FunAddr handle,u8 dpl)
 {
 	idt_table[index] = gate_create((u32)handle,0x8,DA_386TGate | dpl,0);
+	return;
 }
 
 /* 任务门 */
 void idt_init_task(int index,FunAddr handle,u8 dpl)
 {
 	idt_table[index] = gate_create((u32)handle,0x8,DA_TaskGate | dpl,0);
+	return;
 }
 
 /************************************************************************/
@@ -68,4 +74,5 @@ void idt_load()
 			"lidt (%%eax)"
 			:
 			: "g"(pIdt));
+	return;
 }

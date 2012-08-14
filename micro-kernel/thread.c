@@ -141,5 +141,5 @@ int thread_kill(id_t id)
 
 void thread_schedule()
 {
-	Open_Int();
+
 }
