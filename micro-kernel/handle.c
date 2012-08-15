@@ -72,7 +72,8 @@ void intr_handle(int irq_num)
 			0,
 			NULL,
 			0};
-	msg_send(msg);
+//	msg_send(msg);
+	thread_schedule();
 	return;
 }
 

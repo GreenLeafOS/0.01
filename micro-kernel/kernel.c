@@ -16,13 +16,17 @@ void main_thread_create();
 
 void KernelMain()
 {
+	list_init(&thread_queue_ready);
+	list_init(&thread_queue_sleep);
+
 	char *str = "\n\nIn Kernel now.\n";
 	print(str);
 
 	kernel_stack_p = &tss.esp0;
 
-	main_thread_create();
 	kernel_reenter = 0;
+	main_thread_create();
+
 
 	restart();
 
@@ -34,17 +38,45 @@ void main_thread()
 {
 	char *str = "main_thread\n";
 	print(str);
-
-	char ch[] = {'m','\0'};
 	while(1)
 	{
-		for(int i=0;i<100;i++)
-			for(int j=0;j<100;j++)
-				for(int k=0;k<100;k++);
-		print(&ch);
+		for (int i=0;i<1000000;i++);
+		char *str = "M";
+		print(str);
+	}
+	while(1);
+}
+
+void testA()
+{
+	while(1)
+	{
+		for (int i=0;i<1000000;i++);
+		char *str = "A";
+		print(str);
 	}
 }
 
+void testB()
+{
+	while(1)
+	{
+		for (int i=0;i<1000000;i++);
+		char *str = "B";
+		print(str);
+
+	}
+}
+
+void testC()
+{
+	while(1)
+	{
+		for (int i=0;i<1000000;i++);
+		char *str = "C";
+		print(str);
+	}
+}
 
 void main_thread_create()
 {
@@ -61,14 +93,21 @@ void main_thread_create()
 	regs.ss = data;
 
 	regs.cs = code;
-	regs.eip = (u32)main_thread;
-
 	regs.eflags = 0x1202;	// IF = 1,IOPL = 1, bit 2 is always 1.
 
-	id_t id = thread_fork(regs);
+	/* 建立线程 */
+	regs.eip = (u32)main_thread;
+	thread_fork(regs);
 
-	thread_run = thread_table[id];
-	thread_run_stack_top = &thread_table[id]->thread_info.stack_top;
+	regs.eip = (u32)testA;
+	thread_fork(regs);
+	regs.eip = (u32)testB;
+	thread_fork(regs);
+	regs.eip = (u32)testC;
+	thread_fork(regs);
+
+	thread_run = thread_table[0];
+	thread_run_stack_top =(u32*)&thread_run->thread_info.stack_top;
 }
 
 

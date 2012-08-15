@@ -11,7 +11,7 @@
 
 BmpArrayDefine(thread_table,KernelThread*,NR_THREAD,);
 
-KernelThread*	thread_run;
+KernelThread*	thread_run = NULL;
 ListHead		thread_queue_ready;
 ListHead		thread_queue_sleep;
 
@@ -50,7 +50,7 @@ id_t thread_create(FunAddr fun,MsgHead msg_head,int cpl)
 	new_thread.flags = THREAD_STATE_READY;
 	new_thread.priority = msg_head.priority;		// 暂时继承消息的优先级
 	new_thread.stack_top = (u32)(((u8*)(&new_space->stack[4096])) - msg_head.body_size);	// 栈顶(开辟了消息体的空间)
-	new_thread.ticks = (5-new_thread.priority)* 400;
+	new_thread.ticks = (5-new_thread.priority)* 4;
 
 	/* 线程描述符写入在线程空间中 */
 	new_space->thread_info = new_thread;
@@ -146,7 +146,7 @@ id_t thread_fork(StackFrame regs)
 	new_thread.flags = THREAD_STATE_READY;
 	new_thread.priority = 1;
 	new_thread.stack_top = (u32)&new_space->stack[4096]  - sizeof(regs);	// 栈顶
-	new_thread.ticks = (5-new_thread.priority)* 400;
+	new_thread.ticks = (5-new_thread.priority)* 40;
 
 	/* 线程描述符写入在线程空间中 */
 	new_space->thread_info = new_thread;
@@ -216,22 +216,39 @@ int thread_kill(id_t id)
 }
 
 
+/*
+ * ebp - 16 : i
+ * ebp - 12 : thread
+ */
 void thread_schedule()
 {
+	int i = 0;
+
+	if (thread_run == NULL)
+		thread_run = thread_table[0];
+
+	/* 检查运行线程是否需要切换 */
+	if (thread_run->thread_info.ticks--)
+	{
+		return;
+	}
+	/* 时间片已完，重置 */
+	else
+	{
+		thread_run->thread_info.ticks = (5-thread_run->thread_info.priority)* 20;
+		list_addtail(&thread_queue_ready,&thread_run->thread_info.node);
+	}
+	/* 搜索可执行线程 */
 	while(1)
 	{
-		int i = 0;
 		KernelThread *thread =(KernelThread*)list_search(&thread_queue_ready,i++);
 		if (thread == NULL) return;
-		if (thread->thread_info.ticks-- != 0)
+		if (thread->thread_info.ticks)
 		{
 			thread_run = thread;
 			thread_run_stack_top =(u32*)&thread->thread_info.stack_top;
+			list_unlink(&thread_run->thread_info.node);
 			return;
-		}
-		else
-		{
-			thread_run->thread_info.ticks = (5-thread_run->thread_info.priority)* 200;
 		}
 	}
 }

@@ -42,8 +42,25 @@ Bool list_add(ListHead *head,ListNode *node)
 	return False;
 }
 
+/*
+ * 添加在末尾
+ */
+Bool list_addtail(ListHead *head,ListNode *node)
+{
+	if(head && head->prev && node)
+	{
+		/* 新节点和头节点的前节点建立链接 */
+		node->prev = head->prev;
+		head->prev->next = node;
 
+		/* 新节点和头节点建立链接 */
+		node->next = (ListNode*)head;
+		head->prev = node;
 
+		return True;
+	}
+	return False;
+}
 
 /*
  * 搜索

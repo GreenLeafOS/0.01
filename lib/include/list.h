@@ -29,7 +29,8 @@ void list_init(ListHead *head);
 
 /* 添加在开头 */
 Bool list_add(ListHead *head,ListNode *node);
-
+/* 添加在结尾 */
+Bool list_addtail(ListHead *head,ListNode *node);
 /* 搜索 */
 ListNode* list_search(ListHead *head,int index);
 

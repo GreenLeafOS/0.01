@@ -23,7 +23,7 @@ id_t msg_send(MsgHead msg_head)
 	{
 		KernelLock();			// 关中断
 
-		if (msg_head.type == 0)
+		if (msg_head.receiver == 0)
 			msg_handle(msg_head);	// 处理广播消息
 		else
 			(*((MsgHandle)mod_table[msg_head.receiver]->fun_msg_handle))(msg_head);
@@ -32,7 +32,7 @@ id_t msg_send(MsgHead msg_head)
 	}
 	else
 	{
-		if (msg_head.type == 0)
+		if (msg_head.receiver == 0)
 			thread_create(msg_handle,msg_head,0);
 		else
 			thread_create((FunAddr)mod_table[msg_head.receiver]->fun_msg_handle,msg_head,0);
