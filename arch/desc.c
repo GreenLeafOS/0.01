@@ -26,12 +26,12 @@ Desc desc_create(u32 base,u32 limit, u16 attribute)
 
 u16 gdt_get_sel(int index,u8 rpl)
 {
-	return (index << 3 + rpl + 0);
+	return ((index) << 3 + rpl + 0);
 }
 
 u16 ldt_get_sel(int index,u8 rpl)
 {
-	return (index << 3 + rpl + 4);
+	return ((index) << 3 + rpl + 4);
 }
 
 /*===============================================================

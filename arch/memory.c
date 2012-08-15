@@ -7,38 +7,6 @@
 
 #include "include/memory.h"
 
-/*
- * 初始化
- * 获得内存大小
- * 计算位图大小
- * 位图中一个位表示一个页的使用情况
- * 则一个项可表示32个页。32*4096/1024 = 128 Kb = 1/8 M
- * 8个表项就是 128*8/1024 = 1 M
- */
-
-void mem_init()
-{
-	/* 获得内存大小 */
-	for(int i=0;i<mem_mcr_number;i++)
-	{
-		if(mem_info[i].Type == 1)
-			if (mem_info[i].BaseAddrLow + mem_info[i].LenthLow > mem_size)
-				mem_size = mem_info[i].BaseAddrLow + mem_info[i].LenthLow;
-	}
-
-	/* 计算位图大小 */
-	mem_used_map_max = (mem_size/PAGE_SIZE)/32 + 1;
-	mem_size = mem_used_map_max*32*PAGE_SIZE;
-
-	/* 给指针赋值 */
-	mem_used_map =(u32*)0x16000;
-
-	/* 保留4M的内核空间 */
-	for(int i=0;i<KERNEL_USED_MEM_ITEM;i++)
-		*(mem_used_map + i) = ~0;
-}
-
-
 
 /*
  * 设置某个页为使用

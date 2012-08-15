@@ -10,6 +10,7 @@
 .global	save
 .global thread_sleep
 .global	thread_sleep_self
+.global	restart
 /*
  * 中断异常处理程序开头调用以保存寄存器值
  */
@@ -47,6 +48,8 @@ save:
 	mov		%ax,%ds
 	mov		%ax,%es
 	mov		%ax,%fs
+
+	mov		$40,%ax
 	mov		%ax,%gs
 
 	movl	(kernel_stack_p),%eax
@@ -87,7 +90,7 @@ restart:
 	decl	(kernel_reenter)
 
 	/* 保存内核esp到tss */
-	movl	%eax,(kernel_stack_p)
+	movl	(kernel_stack_p),%eax
 	movl	%esp,(%eax)
 
 	/* 恢复运行 */
@@ -138,13 +141,16 @@ thread_sleep_self:
 	push	%fs
 	push	%gs
 	/* 保存栈指针 */
-	movl	%esp,(thread_run_stack_top)
+	movl	(thread_run_stack_top),%eax
+	movl	%esp,(%eax)
 
 	/* 进入内核栈 */
 	mov		%ss,%ax
 	mov		%ax,%ds
 	mov		%ax,%es
 	mov		%ax,%fs
+
+	mov		$40,%ax
 	mov		%ax,%gs
 
 	movl	(kernel_stack_p),%eax

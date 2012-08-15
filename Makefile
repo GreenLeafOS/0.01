@@ -3,7 +3,7 @@
 #					系统编译						#
 #################################################
 entrypoint			= 	0x100000
-memoryinfo			=	0x15000
+memoryinfo			=	0x30000
 #------------连接-----------
 ld					=	ld
 ld_flags			=	-s -Ttext $(entrypoint) -section-start memory=$(memoryinfo) -Map bin/kernel.map

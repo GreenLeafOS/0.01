@@ -16,7 +16,7 @@
 #include <arch/include/lock.h>
 #include <arch/include/memory.h>
 #include <arch/include/table.h>
-
+#include <arch/include/print.h>
 /************************************************************************/
 /*							内核对象
 /*							object
@@ -81,9 +81,15 @@ typedef struct kernel_thread_desc
 typedef union thread_union
 {
 	ThreadDesc thread_info;
-	u32 stack[1024];		/* 4k的栈 */
+	u8 stack[4096];		/* 4k的栈 */
 }KernelThread;
 
+
+#define		KERNEL_CODE		1
+#define		KERNEL_DATA		2
+#define		USER_CODE		3
+#define		USER_DATA		4
+#define		USER_VIDEO		5
 /************************************************************************/
 /*							内核函数
 /*							function
@@ -93,6 +99,7 @@ int 	mod_load(ModuleHead* p_mod);
 
 /* 线程函数 */
 id_t 	thread_create(FunAddr fun,MsgHead msg_head,int cpl);
+id_t	thread_fork(StackFrame regs);
 int 	thread_sleep(KernelThread* thread);
 void	thread_sleep_self();
 int 	thread_wake(id_t id);
@@ -116,6 +123,7 @@ void	exception_handler(int vec_num, int err_code);
 void 	idt_init();
 /* 汇编函数 */
 void 	save();
+void	restart();
 /************************************************************************/
 /*							内核数据
 /*							data

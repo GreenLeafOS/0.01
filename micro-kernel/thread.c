@@ -19,7 +19,7 @@ int				thread_sleep_id;
 u32* 			thread_run_stack_top;
 
 /*
- * 创建线程
+ * 根据消息创建线程
  */
 id_t thread_create(FunAddr fun,MsgHead msg_head,int cpl)
 {
@@ -49,8 +49,8 @@ id_t thread_create(FunAddr fun,MsgHead msg_head,int cpl)
 	new_thread.id = id;
 	new_thread.flags = THREAD_STATE_READY;
 	new_thread.priority = msg_head.priority;		// 暂时继承消息的优先级
-	new_thread.stack_top = (u32)(((u8*)(&new_space->stack[1023])) - msg_head.body_size);	// 栈顶(开辟了消息体的空间)
-	new_thread.ticks = new_thread.priority * 400;
+	new_thread.stack_top = (u32)(((u8*)(&new_space->stack[4096])) - msg_head.body_size);	// 栈顶(开辟了消息体的空间)
+	new_thread.ticks = (5-new_thread.priority)* 400;
 
 	/* 线程描述符写入在线程空间中 */
 	new_space->thread_info = new_thread;
@@ -64,13 +64,13 @@ id_t thread_create(FunAddr fun,MsgHead msg_head,int cpl)
 
 	if (cpl == 0)
 	{
-		code = gdt_get_sel(0,0);
-		data = gdt_get_sel(1,0);
+		code = gdt_get_sel(KERNEL_CODE,0);
+		data = gdt_get_sel(KERNEL_DATA,0);
 	}
 	else if (cpl == 3)
 	{
-		code = gdt_get_sel(0,3);
-		data = gdt_get_sel(1,3);
+		code = gdt_get_sel(USER_CODE,3);
+		data = gdt_get_sel(USER_DATA,3);
 	}
 	else
 	{
@@ -86,7 +86,7 @@ id_t thread_create(FunAddr fun,MsgHead msg_head,int cpl)
 			msg_head.body_size);						// size
 
 	/* 消息头入栈 */
-	new_space->thread_info.stack_top - sizeof(msg_head);
+	new_space->thread_info.stack_top -=  sizeof(msg_head);
 	memcpy((void*)new_space->thread_info.stack_top,		// dst
 			(void*)&msg_head,							// src
 			sizeof(msg_head));							// size
@@ -94,7 +94,8 @@ id_t thread_create(FunAddr fun,MsgHead msg_head,int cpl)
 
 
 	/* 寄存器入栈 */
-	regs = (StackFrame*)(new_space->thread_info.stack_top - sizeof(*regs));
+	new_space->thread_info.stack_top -= sizeof(*regs);
+	regs = (StackFrame*)(new_space->thread_info.stack_top);
 
 	regs->ds = data;
 	regs->es = data;
@@ -112,6 +113,53 @@ id_t thread_create(FunAddr fun,MsgHead msg_head,int cpl)
 	return id;
 }
 
+
+/*
+ * 创建线程
+ */
+id_t thread_fork(StackFrame regs)
+{
+	/* 分配一个线程描述符 */
+	struct kernel_thread_desc new_thread;
+
+
+	/* 向内存分配器申请一个页的空间 */
+	KernelThread *new_space;
+	new_space = (KernelThread *)mem_page_alloc();
+
+
+	/* 在线程地址表分配一个指针 */
+	int id = bmp_search(&thread_table_data,NR_THREAD);
+	if (id != -1)
+	{
+		thread_table[id] = new_space;		// 写入指针
+		bmp_set(&thread_table_data,id);		// 设置位图
+	}
+	else
+	{
+		return -1;
+	}
+
+
+	/* 初始化线程描述符 */
+	new_thread.id = id;
+	new_thread.flags = THREAD_STATE_READY;
+	new_thread.priority = 1;
+	new_thread.stack_top = (u32)&new_space->stack[4096]  - sizeof(regs);	// 栈顶
+	new_thread.ticks = (5-new_thread.priority)* 400;
+
+	/* 线程描述符写入在线程空间中 */
+	new_space->thread_info = new_thread;
+
+	/* 在就绪线程链表中添加一个项 */
+	list_add(&thread_queue_ready,&new_space->thread_info.node);
+
+	StackFrame* dst_regs = (StackFrame*)(new_space->thread_info.stack_top);
+	regs.esp = (u32)new_space->thread_info.stack_top;
+	*dst_regs = regs;
+
+	return id;
+}
 
 int thread_sleep(KernelThread* thread)
 {
@@ -174,10 +222,16 @@ void thread_schedule()
 	{
 		int i = 0;
 		KernelThread *thread =(KernelThread*)list_search(&thread_queue_ready,i++);
+		if (thread == NULL) return;
 		if (thread->thread_info.ticks-- != 0)
 		{
 			thread_run = thread;
 			thread_run_stack_top =(u32*)&thread->thread_info.stack_top;
+			return;
+		}
+		else
+		{
+			thread_run->thread_info.ticks = (5-thread_run->thread_info.priority)* 200;
 		}
 	}
 }

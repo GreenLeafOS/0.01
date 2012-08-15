@@ -67,7 +67,7 @@ read_sector:
 /************************************************************************/
 MCRNumber		=		0x200
 get_mem_info:
-	mov		$0x1500,%ax
+	mov		$0x3000,%ax
 	mov		%ax,%es
 	mov		$0,%di
 
