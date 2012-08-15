@@ -20,6 +20,8 @@ _start:
 	mov		$40,%ax
 	mov		%ax,%gs
 
+	movl	$0x80000,%esp
+
 	call	init_8259A
 	call	idt_init
 	call	tss_init

@@ -6,10 +6,10 @@
 
 .include "gdt.s"
 
-Kernel_Start		=	3
-Kernel_End			=	69
+Kernel_Start		=	4
+Kernel_End			=	63
 Kernel_Size			=	Kernel_End - Kernel_Start + 1
-Kernel_FileAddr		=	0x4000		/* 暂时可以随便放 */
+Kernel_FileAddr		=	0x10000		/* 暂时可以随便放 */
 Kernel_OffSetAddr	=	0x100000	/* 1M开始 */
 /************************************************************************/
 /*						入口函数
@@ -27,15 +27,18 @@ _start:
 
 
 	/* 读入内核 */
-	mov	$0, %ax
+	mov	$0x1000, %ax
 	mov	%ax,%es
-	mov	$Kernel_FileAddr, %bx
-	mov	$Kernel_Start, %al
-	mov	$Kernel_Size,  %cl
+	mov	$0, %bx
+	mov	$Kernel_Start, %cl
+	mov	$Kernel_Size,  %al
 	call read_sector
 
 	/* 获取内存数量 */
 	call	get_mem_info
+
+	/* 输出字符串 */
+	call	disp_str
 
 	/* 跳入保护模式 */
 	jmp	jmp_pm
@@ -43,34 +46,20 @@ _start:
 /************************************************************************/
 /*						读取磁盘
 /*					  read_sector
-/* 入口参数：	al 起始扇区
-/*			cl 扇区数
+/* 入口参数：	cl 起始扇区
+/*			al 扇区数
 /*	读入 es:bx 中
 /************************************************************************/
 read_sector:
-	push	%bp
-	mov		%sp,%bp
-	sub		$2, %sp			/* 辟出两个字节的堆栈区域保存要读的扇区数: byte [bp-2] */
-	mov		%cl,-2(%bp)
-	push	%bx				/* 保存 bx */
-	mov		$18,%bl			/* bl: 除数 */
-	div		%bl				/* y 在 al 中, z 在 ah 中 */
-	inc		%ah				/* z ++ */
-	mov		%ah,%cl 		/* cl <- 起始扇区号 */
-	mov		%al,%dh 		/* dh <- y */
-	shr		$1,%al			/* y >> 1 (其实是 y/BPB_NumHeads, 这里BPB_NumHeads=2) */
-	mov		%al,%ch			/* ch <- 柱面号 */
-	and		$1,%dh			/* dh & 1 = 磁头号 */
- 	pop		%bx				/* 恢复 bx */
-_read_sector_reading:
-	mov		$2,%ah			/* 读 */
-	mov		-2(%bp),%al		/* 读 al 个扇区 */
-	int		$0x13
-	jc		_read_sector_reading	/* 如果读取错误 CF 会被置为 1, 这时就不停地读, 直到正确为止 */
-	add		$2,%sp
-	pop		%bp
+	mov		$2,%ah		/* 功能号 */
+	mov		$0,%dh		/* 磁头号 */
+	mov		$0,%ch		/* 柱面号 */
+
+	int		$0x13			/* 中断调用 */
+	jc		read_sector		/* 重复调用 */
 
 	ret
+
 /************************************************************************/
 /*						获取内存信息
 /*					    get_mem_info
@@ -98,6 +87,29 @@ _get_mem_info_loop:
 _get_mem_info_fail:
 	movl	$0,%es:(MCRNumber)
 	ret
+/************************************************************************/
+/*                      在屏幕上显示字符串
+/*                         disp_str
+/************************************************************************/
+disp_str:
+	mov		$0xb800,%ax
+	mov		%ax,%es
+
+	mov		$loader_msg, %si	/* 字符串地址 */
+	mov		$0x0f, %ah		/* 黑底白字 */
+	mov		$160, %di		/* 对di清0 */
+_disp_str_loop:
+	lodsb					/* (C)al=*si;si++; */
+	test	%al, %al		/* 测试是否为0 */
+	jz		_disp_str_end	/* 为0则结束 */
+	mov		%ax, %es:(%di)	/* 写入 */
+	add		$2,  %di		/* di+2*/
+	jmp		_disp_str_loop	/* 进入下一次循环 */
+_disp_str_end:
+	ret
+loader_msg:
+	.ascii	"Loading..."
+	.byte	0
 /************************************************************************/
 /*                      GDT段描述符表
 /*                         gdt

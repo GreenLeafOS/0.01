@@ -8,7 +8,7 @@
 
 #include "include/kernel.h"
 #include "include/handle.h"
-
+#include "include/msg.h"
 
 int	err_code;
 int ret_addr;
@@ -66,6 +66,13 @@ void idt_init()
  * */
 void intr_handle(int irq_num)
 {
+	MsgHead msg = {MSG_INTR + irq_num,
+			msg_priority_table[MSG_INTR + irq_num],
+			0,
+			0,
+			NULL,
+			0};
+	msg_send(msg);
 	return;
 }
 
@@ -79,5 +86,12 @@ void intr_handle(int irq_num)
  * */
 void exception_handler(int vec_num, int err_code)
 {
+	MsgHead msg = {MSG_EXCP + vec_num,
+				msg_priority_table[MSG_EXCP + vec_num],
+				0,
+				0,
+				&err_code,
+				sizeof(int)};
+	msg_send(msg);
 	return;
 }

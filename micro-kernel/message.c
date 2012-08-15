@@ -22,12 +22,20 @@ id_t msg_send(MsgHead msg_head)
 	if(msg_head.priority == MSG_PRIORITY_REALTIME)
 	{
 		KernelLock();			// 关中断
-		msg_handle(msg_head);	// 处理消息
+
+		if (msg_head.type == 0)
+			msg_handle(msg_head);	// 处理广播消息
+		else
+			(*((MsgHandle)mod_table[msg_head.receiver]->fun_msg_handle))(msg_head);
+
 		KernelUnlock();			// 开中断
 	}
 	else
 	{
-		// thread_create
+		if (msg_head.type == 0)
+			thread_create(msg_handle,msg_head,0);
+		else
+			thread_create((FunAddr)mod_table[msg_head.receiver]->fun_msg_handle,msg_head,0);
 	}
 	return -1;
 }
@@ -66,7 +74,23 @@ int msg_register(id_t mod_id,u16 msg_type)
  */
 MsgHead msg_recv()
 {
-
+	MsgHead ret = {0};
+	while(1)
+	{
+		MsgHead *p =(MsgHead*)round_queue_delete(
+				&thread_table[thread_run->thread_info.id]->
+				thread_info.msg_queue_data);
+		if (p == NULL)
+		{
+			thread_sleep_self();
+		}
+		else
+		{
+			ret = *p;
+			return ret;
+		}
+	}
+	return ret;
 }
 
 
@@ -75,7 +99,13 @@ MsgHead msg_recv()
 // 发送消息
 Bool msg_post(MsgHead msg_head)
 {
+	Result ret = round_queue_add(
+			&thread_table[msg_head.receiver]->
+			thread_info.msg_queue_data,
+			msg_head);
 
+	if (ret == E_MAX) return False;
+	return True;
 }
 
 

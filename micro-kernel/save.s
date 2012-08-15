@@ -8,6 +8,8 @@
 .include 	"include/head.s"
 
 .global	save
+.global thread_sleep
+.global	thread_sleep_self
 /*
  * 中断异常处理程序开头调用以保存寄存器值
  */
@@ -22,7 +24,7 @@ save:
  * 没有发生中断重入时调用
  * 保存线程上下文
  * 进入内核栈
- * 压入restart作为中断处理程序的返回地址
+ * 压入restart作为中断处理程序的返回地址 reg addr
  */
 #save:
 
@@ -37,7 +39,8 @@ save:
 	push	%fs
 	push	%gs
 	/* 保存栈指针 */
-	movl	%esp,(thread_run_stack_top)
+	movl	(thread_run_stack_top),%eax
+	movl	%esp,(%eax)
 
 	/* 进入内核栈 */
 	mov		%ss,%ax				# ss是在(kernel_stack)TSS里取的内核数据段
@@ -45,6 +48,9 @@ save:
 	mov		%ax,%es
 	mov		%ax,%fs
 	mov		%ax,%gs
+
+	movl	(kernel_stack_p),%eax
+	movl	(%eax),%esp
 
 	/* 压入restart */
 	pushl	$restart
@@ -85,7 +91,9 @@ restart:
 	movl	%esp,(%eax)
 
 	/* 恢复运行 */
-	movl	(thread_run_stack_top),%esp
+	movl	(thread_run_stack_top),%eax
+	movl	(%eax),%esp
+
 	pop		%gs
 	pop		%fs
 	pop		%es
@@ -104,4 +112,49 @@ restart_reenter:
 
 	/* 返回 */
 	iret
+
+thread_sleep_self:
+	/* 重入计数器加1 */
+	incl	(kernel_reenter)
+
+	/* 弹出返回地址 */
+	popl	(ret_addr)
+
+	/* 保存栈 */
+	push	%ss
+	pushl	%esp
+	/* 保存eflags */
+	pushf
+	/* 关中断 */
+	cli
+	/* 保存程序指针 */
+	push	%cs
+	pushl	(ret_addr)
+	/* 保存寄存器 */
+	pushal
+	/* 保存段寄存器 */
+	push	%ds
+	push	%es
+	push	%fs
+	push	%gs
+	/* 保存栈指针 */
+	movl	%esp,(thread_run_stack_top)
+
+	/* 进入内核栈 */
+	mov		%ss,%ax
+	mov		%ax,%ds
+	mov		%ax,%es
+	mov		%ax,%fs
+	mov		%ax,%gs
+
+	movl	(kernel_stack_p),%eax
+	movl	(%eax),%esp
+
+	/* 压入参数 */
+	pushl	(thread_run)
+	/* 压入restart作为睡眠处理程序的返回地址 */
+	pushl	$restart
+
+	/* 进入睡眠处理程序 */
+	jmp		thread_sleep
 

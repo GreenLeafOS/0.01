@@ -14,15 +14,21 @@ EOI				=	0x20
 
 /* thread.c */
 .extern		thread_schedule
+.extern		thread_sleep_id
+.extern		thread_sleep
+
+.extern 	thread_run_stack_top
+.extern		thread_run
+
 /* save.s */
 .extern		save
+
 /* handle.c */
 .extern		intr_handle
 .extern		exception_handler
 .extern 	ret_addr
 .extern		err_code
 
-.extern 	thread_run_stack_top
 /* kernel.c */
 .extern		kernel_reenter
 .extern		kernel_stack_p
@@ -53,7 +59,7 @@ sel_data		=			16
 	outb	%al,$INT_M_CTL
 
 	/* 调用中断处理函数 */
-	pushl	\irq_num				/* irq */
+	pushl	$\irq_num				/* irq */
 	call	intr_handle				/* 如果没有重入则调用调度函数。中断重入时不允许抢占 */
 	popl	%ecx					/* 调用者清理堆栈 */
 
@@ -77,7 +83,7 @@ sel_data		=			16
 	call	save
 
 	inb		$INT_S_CTLMASK,%al
-	orb		(1 << (\irq_num-8)),%al
+	orb		$(1 << (\irq_num-8)),%al
 	outb	%al,$INT_S_CTLMASK		/* 屏蔽当前中断 */
 
 	movb	$EOI,%al
@@ -86,7 +92,7 @@ sel_data		=			16
 	outb	%al,$INT_S_CTL			/* 重新打开从8259A */
 
 	sti								/* 开中断 */
-	pushl	\irq_num				/* irq */
+	pushl	$\irq_num				/* irq */
 	call	intr_handle
 	popl	%ecx					/* 调用者清理堆栈 */
 	cli								/* 关中断 */

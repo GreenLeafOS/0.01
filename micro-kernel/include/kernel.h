@@ -17,7 +17,6 @@
 #include <arch/include/memory.h>
 #include <arch/include/table.h>
 
-#include "msg.h"
 /************************************************************************/
 /*							内核对象
 /*							object
@@ -71,6 +70,7 @@ typedef struct kernel_thread_desc
 	u16  flags;		/* 状态信息 */
 	u16  priority;	/* 优先级 */
 	u32  stack_top;	/* 栈顶 */
+	u16  ticks;		/* 时间片 */
 	RoundQueueDefine(msg_queue,MsgHead,32,);	/* 消息队列 */
 }ThreadDesc;
 
@@ -92,8 +92,9 @@ typedef union thread_union
 int 	mod_load(ModuleHead* p_mod);
 
 /* 线程函数 */
-id_t 	thread_create(ThreadFun fun,MsgHead msg_head);
-int 	thread_sleep(id_t id);
+id_t 	thread_create(FunAddr fun,MsgHead msg_head,int cpl);
+int 	thread_sleep(KernelThread* thread);
+void	thread_sleep_self();
 int 	thread_wake(id_t id);
 int 	thread_kill(id_t id);
 
