@@ -14,7 +14,7 @@
 #define KernelLock() \
 		unsigned int eflags;	\
 		StoreFlags(eflags);		\
-		OpenInt()
+		CloseInt()
 
 
 #define KernelUnlock()	\

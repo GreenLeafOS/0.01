@@ -1,39 +1,125 @@
 /*
- * head.s
+ * handle.inc
  *
- *  Created on: 2012-8-14
+ *  Created on: 2012-8-16
  *      Author: greenleaf
  */
 
-INT_M_CTL		=	0x20	/* I/O port for interrupt controller         <Master> */
-INT_M_CTLMASK	=	0x21	/* setting bits in this port disables ints   <Master> */
-INT_S_CTL		=	0xA0	/* I/O port for second interrupt controller  <Slave> */
-INT_S_CTLMASK	=	0xA1	/* setting bits in this port disables ints   <Slave> */
-
-EOI				=	0x20
+.include	"head.inc"
 
 /* thread.c */
 .extern		thread_schedule
-.extern		thread_sleep_id
-.extern		thread_sleep
+.extern		thread_wait
+.extern		thread_exit
 
 .extern 	thread_run_stack_top
 .extern		thread_run
 
 /* save.s */
 .extern		save
+.extern		restart
 
 /* handle.c */
-.extern		intr_handle
-.extern		exception_handler
-.extern 	ret_addr
-.extern		err_code
+.extern		handler_exception
+.extern		handle_intr
+.extern 	handle_ret_addr
+.extern		handle_err_code
 
-/* kernel.c */
+/* main.c */
 .extern		kernel_reenter
-.extern		kernel_stack_p
+.extern		kernel_stack_top
 
-sel_data		=			16
+
+
+
+/*
+ * 进入内核栈
+ */
+.macro into_kernel
+	/* 装载段寄存器 */
+	mov		%ss,%ax
+	mov		%ax,%ds
+	mov		%ax,%es
+	mov		%ax,%fs
+
+	mov		$40,%ax
+	mov		%ax,%gs
+
+	/* 进入内核栈 */
+	movl	(kernel_stack_top),%eax
+	movl	(%eax),%esp
+.endm
+
+
+
+/*
+ * 返回线程
+ */
+.macro ret_thread
+	movl	(thread_run_stack_top),%eax
+	movl	(%eax),%esp
+
+	pop		%gs
+	pop		%fs
+	pop		%es
+	pop		%ds
+	popal
+.endm
+
+
+/*
+ * 保存段寄存器
+ */
+.macro push_segment
+	push	%ds
+	push	%es
+	push	%fs
+	push	%gs	
+.endm
+
+
+
+/*
+ * 恢复段寄存器
+ */
+.macro pop_segment
+	pop		%gs
+	pop		%fs
+	pop		%es
+	pop		%ds
+.endm
+
+
+
+/*
+ * 保存线程栈指针
+ */
+.macro save_thread_stack
+	movl	(thread_run_stack_top),%eax
+	movl	%esp,(%eax)
+.endm
+
+
+
+/*
+ * 恢复线程栈指针
+ */
+.macro release_thread_stack
+	movl	(thread_run_stack_top),%eax
+	movl	(%eax),%esp
+.endm
+ 
+ 
+
+
+/*
+ * 保存内核栈指针
+ */
+.macro save_kernel_stack
+	movl	(kernel_stack_top),%eax
+	movl	%esp,(%eax)
+.endm
+
 
 
 
@@ -60,7 +146,7 @@ sel_data		=			16
 
 	/* 调用中断处理函数 */
 	pushl	$\irq_num				/* irq */
-	call	intr_handle				/* 如果没有重入则调用调度函数。中断重入时不允许抢占 */
+	call	handle_intr				/* 如果没有重入则调用调度函数。中断重入时不允许抢占 */
 	popl	%ecx					/* 调用者清理堆栈 */
 
 	/* 恢复响应当前中断 */
@@ -73,6 +159,8 @@ sel_data		=			16
 	/* 如果没有中断重入，则返回压入的restart */
 	ret
 .endm
+
+
 
 
 
@@ -93,7 +181,7 @@ sel_data		=			16
 
 	sti								/* 开中断 */
 	pushl	$\irq_num				/* irq */
-	call	intr_handle
+	call	handle_intr
 	popl	%ecx					/* 调用者清理堆栈 */
 	cli								/* 关中断 */
 
@@ -106,17 +194,18 @@ sel_data		=			16
 
 
 
+
+
+
 /*
  * 异常处理
  */
 .macro exception vec_num
-	popl	(err_code)
+	popl	(handle_err_code)
 	call	save
-	pushl	(err_code)
-	pushl	\vec_num
-	call	exception_handler
+	pushl	(handle_err_code)
+	pushl	$\vec_num
+	call	handler_exception
 	addl	$8,%esp					/* 清理堆栈 */
-	popl	%ecx
-	pushl	%eax					/* 压入restart断点(由exception_handler 返回) */
 	jmp		thread_schedule			/* 调用调度函数 */
 .endm

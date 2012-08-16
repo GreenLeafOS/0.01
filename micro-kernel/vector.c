@@ -1,13 +1,13 @@
 /*
- * msg.c
+ * vector.c
  *
- *  Created on: 2012-8-14
+ *  Created on: 2012-8-16
  *      Author: greenleaf
  */
 
-#include "include/msg.h"
+#include "include/message.h"
 
-const int	msg_priority_table[48]	=
+const int msg_priority_table[48]	=
 {
 		MSG_PRIORITY(		MSG_EXCP_DE			,MSG_PRIORITY_REALTIME)
 		MSG_PRIORITY(		MSG_EXCP_DB			,MSG_PRIORITY_REALTIME)

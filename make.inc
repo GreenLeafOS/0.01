@@ -1,5 +1,5 @@
 asm					=	as
-asm_flags			=	-I ../arch/include/
+asm_flags			=	-I ../arch/include/ -I ../micro-kernel/include/
 
 cc					=	gcc
 cc_flags			=	-I ../ -c -std=c99

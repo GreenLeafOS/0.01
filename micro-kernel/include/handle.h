@@ -1,15 +1,21 @@
 /*
  * handle.h
  *
- *  Created on: 2012-8-14
+ *  Created on: 2012-8-16
  *      Author: greenleaf
  */
 
 #ifndef HANDLE_H_
 #define HANDLE_H_
 
+/* handle function */
+void	handle_intr(int irq_num);
+void	handler_exception(int vec_num, int err_code);
+void 	idt_init();
+void 	save();
+void	restart();
 
-/* 中断异常处理函数 */
+
 void	divide_error();
 void	single_step_exception();
 void	nmi();
@@ -43,5 +49,12 @@ void	hwint12();
 void	hwint13();
 void	hwint14();
 void	hwint15();
+
+
+
+/* handle data */
+extern int handle_err_code;
+extern int handle_ret_addr;
+
 
 #endif /* HANDLE_H_ */

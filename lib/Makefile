@@ -7,6 +7,6 @@ final_obj	=	../bin/lib.o
 
 cpp_objs	=	
 cc_objs		=	string.c.o list.c.o
-asm_objs	=
+asm_objs	=	string.s.o
 
 sinclude ../make.inc

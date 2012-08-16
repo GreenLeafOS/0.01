@@ -1,14 +1,12 @@
 /*
- * msg.h
+ * vector.h
  *
- *  Created on: 2012-8-12
+ *  Created on: 2012-8-16
  *      Author: greenleaf
  */
 
 #ifndef MSG_H_
 #define MSG_H_
-
-#include "kernel.h"
 
 /* 起始向量 */
 #define		MSG_EXCP		0
@@ -56,8 +54,11 @@
 
 /* 线程消息 */
 #define		MSG_THREAD_KILL				MSG_THREAD + 0					// 线程被杀死
-
+#define		MSG_THREAD_REGPUB			MSG_THREAD + 0					// 线程注册广播消息
 /* 优先级 */
 #define		MSG_PRIORITY(msg,value) value,
-extern const int msg_priority_table[48];
+extern		const int msg_priority_table[48];
+
+
 #endif /* MSG_H_ */
+

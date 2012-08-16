@@ -7,7 +7,7 @@
 .extern		mem_init
 .extern		page_init
 
-.extern		KernelMain
+.extern		kernel_main
 
 _start:
 	call	gdt_init
@@ -29,4 +29,4 @@ _start:
 	call	mem_init
 	call	page_init
 
-	jmp		KernelMain
+	jmp		kernel_main
