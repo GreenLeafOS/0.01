@@ -42,48 +42,65 @@ void kernel_main_thread()
 {
 	char* str = "main thread.\n";
 	print(str);
+	for(int i=0;i<20;i++)
+	{
+		for(int j=0;j<1000000;j++);
+		char *str = "M";
+		print(str);
+	}
+	wake(0x421000);
 	while(1)
 	{
-		for (int i=0;i<100000;i++);
+		for(int j=0;j<1000000;j++);
 		char *str = "M";
 		print(str);
 	}
 	while(1);
 }
 
-
+/* 输出35次A后退出 */
 void testA()
 {
-	for(int i=0;i<5;i++)
+	for(int i=0;i<35;i++)
 	{
-		for (int i=0;i<1000000;i++);
+		for(int j=0;j<1000000;j++);
 		char *str = "A";
 		print(str);
 	}
-	while(1);
-//	exit();
+	exit();
 }
 
+/* 输出2次B后睡眠,然后输出5次后退出 */
 void testB()
 {
 	for(int i=0;i<2;i++)
 	{
-		for (int i=0;i<1000000;i++);
+		for(int j=0;j<1000000;j++);
 		char *str = "B";
 		print(str);
 	}
-	while(1);
-//	wait();
+	wait();
+	for(int i=0;i<5;i++)
+	{
+		for(int j=0;j<1000000;j++);
+		char *str = "B";
+		print(str);
+	}
+	exit();
 }
 
-void testC()
+/* 输出9次C后唤醒B，然后杀死A */
+void testC(u32 ss,KernelThread *B)
 {
-	while(1)
+	for(int i=0;i<9;i++)
 	{
-		for (int i=0;i<1000000;i++);
+		for(int j=0;j<1000000;j++);
 		char *str = "C";
 		print(str);
 	}
+	wake(B);
+	sleep(0x421000);
+	exit();
 }
 
 void main_thread_create()
@@ -125,10 +142,13 @@ void main_thread_create()
 	*(StackFrame*)thread->thread_info.stack_top = regs;
 	ready(thread);
 
-
+	KernelThread* B = thread;
 
 	regs.eip = (u32)testC;
 	thread = create();
+	/* B的地址入栈 */
+	thread->thread_info.stack_top -= sizeof(B);
+	*(KernelThread**)thread->thread_info.stack_top = B;
 	thread->thread_info.stack_top -= sizeof(regs);
 	*(StackFrame*)thread->thread_info.stack_top = regs;
 	ready(thread);

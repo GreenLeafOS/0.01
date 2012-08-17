@@ -69,6 +69,9 @@ void thread_wait()
 	/* 从就绪队列移除 */
 	list_unlink(&thread_run->thread_info.node);
 
+	/* 设置状态 */
+	thread_run->thread_info.state = THREAD_STATE_SLEEPING;
+
 	/* 加入睡眠队列 */
 	list_add(&thread_queue_sleep,&thread_run->thread_info.node);
 
@@ -106,6 +109,9 @@ void thread_exit()
 			NULL,					// body_point
 			0};						// body_size
 	post(msg);
+
+	/* 调用调度程序 */
+	thread_schedule();
 }
 
 
