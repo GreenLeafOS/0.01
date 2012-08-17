@@ -20,17 +20,23 @@ typedef struct message_head
 	id_t	receiver;				/* 接收者 */
 	point	body_point;				/* 消息体指针 */
 	u16		body_size;				/* 消息体大小 */
+	u16		param;					/* 占位 */
 }MsgHead;
 
 
 /* MsgHead.priority */
 #define MSG_PRIORITY_REALTIME	0
-#define MSG_PRIORITY_KERNEL		1
-#define MSG_PRIORITY_DRIVER		2
-#define MSG_PRIORITY_USER		3
+#define MSG_PRIORITY_RET		1
+#define MSG_PRIORITY_KERNEL		2
+#define MSG_PRIORITY_DRIVER		3
+#define MSG_PRIORITY_USER		4
 
 /* MsgHead.vector */
 #include "vector.h"
+
+
+/* Message data */
+extern MsgHead msg_ok;
 
 
 #endif /* MESSAGE_H_ */

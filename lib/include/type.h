@@ -10,7 +10,7 @@ typedef unsigned int size_t;
 typedef unsigned int u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
-typedef u16 id_t;
+typedef short id_t;
 typedef void* point;
 typedef void (*ThreadFun)(point params);
 typedef void (*FunAddr)();

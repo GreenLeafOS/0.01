@@ -27,10 +27,10 @@ void handle_intr(int irq_num)
 	MsgHead msg = {MSG_INTR + irq_num,
 			msg_priority_table[MSG_INTR + irq_num],
 			0,
-			0,
+			1,
 			NULL,
 			0};
-//	post(msg);
+	post(msg);
 	thread_schedule();
 	return;
 }
@@ -51,9 +51,10 @@ void handler_exception(int vec_num, int err_code)
 	MsgHead msg = {MSG_EXCP + vec_num,
 				msg_priority_table[MSG_EXCP + vec_num],
 				0,
-				0,
+				1,
 				&err_code,
 				sizeof(int)};
 	post(msg);
+	thread_schedule();
 	return;
 }

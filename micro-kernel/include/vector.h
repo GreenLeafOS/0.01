@@ -54,11 +54,18 @@
 
 /* 线程消息 */
 #define		MSG_THREAD_KILL				MSG_THREAD + 0					// 线程被杀死
-#define		MSG_THREAD_REGPUB			MSG_THREAD + 0					// 线程注册广播消息
+#define		MSG_THREAD_REGPUB			MSG_THREAD + 1					// 线程注册广播消息
+
+#define		MSG_RET_MAX					MSG_THREAD + 2					// 表项已满
+#define		MSG_RET_OK					MSG_THREAD + 3					// 执行成功
+
 /* 优先级 */
 #define		MSG_PRIORITY(msg,value) value,
-extern		const int msg_priority_table[48];
 
+extern const int msg_priority_table[48];
+
+extern MsgHead msg_ok;
+extern MsgHead msg_max;
 
 #endif /* MSG_H_ */
 

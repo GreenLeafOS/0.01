@@ -43,7 +43,7 @@ static inline u8 bmp_test(void *bmp,u32 bit)
 #define Bmp ((u32*)bmp)
 static inline int bmp_search(void *bmp,int max)
 {
-	for(int i=0;i<max;i++)
+	for(int i=0;i<(max/32);i++)
 	{
 		u32* bmp_int = Bmp + i;
 		if (*bmp_int == 0xffffffff) continue;

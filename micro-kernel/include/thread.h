@@ -11,6 +11,9 @@
 #include "message.h"
 
 
+/* ThreadDesc.msg_queue[] */
+#define THREAD_NR_MSGQUEUE		64
+
 /* ThreadDesc */
 typedef struct kernel_thread_desc
 {
@@ -20,10 +23,9 @@ typedef struct kernel_thread_desc
 	u16  priority;					/* 优先级 */
 	u16  ticks;						/* 时间片 */
 	u32  stack_top;					/* 栈顶 */
-	MsgHead msg_queue[32];			/* 消息队列 */
 	u32 msg_queue_bmp;				/* 消息队列位图 */
+	MsgHead msg_queue[THREAD_NR_MSGQUEUE];			/* 消息队列 */
 }ThreadDesc;
-
 
 /* ThreadDesc.state */
 #define THREAD_STATE_RUNNING	1
@@ -61,6 +63,13 @@ extern KernelThread*	thread_run;
 extern u32*				thread_run_stack_top;
 extern ListHead			thread_queue_ready;
 extern ListHead			thread_queue_sleep;
+
+/* thread macro */
+#define CreateThread(thread,regs)	\
+		thread = create();											\
+		thread->thread_info.stack_top -= sizeof(regs);				\
+		*(StackFrame*)thread->thread_info.stack_top = regs;			\
+		ready(thread)
 
 
 #endif /* THREAD_H_ */

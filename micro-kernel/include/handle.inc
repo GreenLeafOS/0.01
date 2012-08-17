@@ -207,5 +207,5 @@
 	pushl	$\vec_num
 	call	handler_exception
 	addl	$8,%esp					/* 清理堆栈 */
-	jmp		thread_schedule			/* 调用调度函数 */
+	ret								/* 返回restart */
 .endm

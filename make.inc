@@ -5,10 +5,7 @@ cc					=	gcc
 cc_flags			=	-I ../ -c -std=c99
 						
 cpp					=	g++
-cpp_flags			=	-I ../kernel/include -I ../micro-kernel/include \
-						-I ../lib/include \
-						-I ../arch/include \
-						-c -fno-rtti \
+cpp_flags			=	-c -fno-rtti \
 						-Wwrite-strings
 
 ld					=	ld
