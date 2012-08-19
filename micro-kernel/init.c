@@ -80,9 +80,10 @@ void gdt_init()
  */
 void tss_init()
 {
-	int i = gdt_add(desc_create((u32)&tss,sizeof(tss)-1,DA_386TSS));
+	int i = gdt_add(desc_create((u32)&tss,sizeof(tss),DA_386TSS));
 	gdt_load();
-	tss.iobase = sizeof(tss);
+	tss.iobase = (u16)&tss.iomap;
+	tss.end = 0xff;
 	tss.ss0 = GdtGetSel(KERNEL_DATA,0);
 	tss.esp0 = 0x80000;
 

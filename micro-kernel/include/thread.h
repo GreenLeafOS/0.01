@@ -64,6 +64,8 @@ extern u32*				thread_run_stack_top;
 extern ListHead			thread_queue_ready;
 extern ListHead			thread_queue_sleep;
 extern StackFrame		thread_default_reg;
+extern Atomic			thread_resched_lock;
+extern KernelThread*	thread_realtime;
 
 /* thread macro */
 #define CreateThread(thread,regs)	\

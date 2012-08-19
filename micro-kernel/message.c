@@ -11,6 +11,9 @@
 MsgHead msg_ok = {MSG_RET_OK,MSG_PRIORITY_RET};
 MsgHead msg_max = {MSG_RET_MAX,MSG_PRIORITY_RET};
 MsgHead msg_reg = {MSG_THREAD_REGPUB,MSG_PRIORITY_REALTIME,0,1};
+
+
+
 /*
  * SysApi post
  * 参数：消息头
@@ -21,9 +24,9 @@ void post(MsgHead msg)
 {
 	KernelLock();
 		/* 获取接收者信息 */
-		KernelThread* thread = thread_table[msg.receiver];
+		KernelThread* thread = thread_table[msg.receiver];	// -12
 		/* 搜索消息队列中的空闲区域 */
-		int id = bmp_search(&thread->thread_info.msg_queue_bmp,THREAD_NR_MSGQUEUE);
+		int id = bmp_search(&thread->thread_info.msg_queue_bmp,THREAD_NR_MSGQUEUE);	// -16
 
 		if (thread == NULL || id == -1)
 		{
@@ -38,7 +41,15 @@ void post(MsgHead msg)
 		/* 唤醒接收消息的线程 */
 		if (thread->thread_info.state == THREAD_STATE_RECVING)
 			wake(thread);
+
 	KernelUnlock();
+
+	/* 如果是实时消息，则直接抢占 */
+	if (msg.priority == MSG_PRIORITY_REALTIME)
+	{
+		thread_realtime = thread;
+		unlock();					/* 允许抢占 */
+	}
 	return;
 }
 
@@ -65,7 +76,6 @@ MsgHead recv()
 		if (empty)
 		{
 			thread_run->thread_info.state = THREAD_STATE_RECVING;
-			__asm volatile("":::"memory");
 			wait();
 		}
 

@@ -34,7 +34,6 @@ void public_msg_do(MsgHead msg)
 		struct msg_reg_item* item = &msg_reg_table[msg.param];
 		if (item->count == (NR_MSG_REG - 1))
 		{
-			__asm(".global debug2\ndebug2:\n");
 			/* 表项已满 */
 			msg_max.sender = 1;
 			msg_max.receiver = msg.sender;
@@ -43,7 +42,6 @@ void public_msg_do(MsgHead msg)
 		}
 		else
 		{
-			__asm(".global debug\ndebug:\n");
 			/* 注册 */
 			item->thread_table[item->count++] = msg.sender;
 
@@ -55,7 +53,6 @@ void public_msg_do(MsgHead msg)
 	}
 	else
 	{
-		__asm(".global debug1\ndebug1:\n");
 		/* 转发消息 */
 		u32	count = msg_reg_table[msg.vector].count;
 		for (int i=0;i<count;i++)
@@ -80,9 +77,6 @@ void public_msg_main()
 	{
 		MsgHead msg = recv();		// 获取消息
 		public_msg_do(msg);			// 处理消息
-		for(int i=0;i<1000000;i++);
-		char *ch = "S";
-		print(ch);
 	}
 }
 

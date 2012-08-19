@@ -8,9 +8,12 @@ idt_ptr             0x6               bin/arch.o
 kernel_reenter      0x4               bin/micro-kernel.o
 handle_ret_addr     0x4               bin/micro-kernel.o
 zone                0x90              bin/micro-kernel.o
+thread_realtime     0x4               bin/micro-kernel.o
 thread_table        0x80              bin/micro-kernel.o
 tss                 0x6c              bin/arch.o
 thread_queue_ready  0x8               bin/micro-kernel.o
+thread_resched_lock
+                    0x4               bin/micro-kernel.o
 thread_queue_sleep  0x8               bin/micro-kernel.o
 handle_err_code     0x4               bin/micro-kernel.o
 kernel_stack_top    0x4               bin/micro-kernel.o
@@ -106,7 +109,7 @@ LOAD bin/lib.o
  *(.iplt)
  .iplt          0x0000000000000000        0x0 bin/arch.o
 
-.text           0x0000000000100000     0x2d38
+.text           0x0000000000100000     0x2e18
  *(.text.unlikely .text.*_unlikely)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
@@ -143,7 +146,7 @@ LOAD bin/lib.o
                 0x00000000001006c2                init_8259A
                 0x0000000000100794                print_pos
  *fill*         0x00000000001007cc        0x4 90909090
- .text          0x00000000001007d0     0x1fe8 bin/micro-kernel.o
+ .text          0x00000000001007d0     0x20c5 bin/micro-kernel.o
                 0x00000000001007d0                save
                 0x000000000010081f                restart
                 0x0000000000100850                hwint00
@@ -182,68 +185,68 @@ LOAD bin/lib.o
                 0x0000000000100cdd                exit
                 0x0000000000100d0c                kernel_main
                 0x0000000000100d4e                kernel_main_thread
-                0x0000000000100d90                main_thread_create
-                0x0000000000100e3c                handle_intr
-                0x0000000000100ea6                handler_exception
-                0x0000000000100f18                page_init
-                0x0000000000101026                gdt_init
-                0x000000000010114b                tss_init
-                0x00000000001011cf                idt_init
-                0x000000000010168e                post
-                0x000000000010172d                recv
-                0x0000000000101888                thread_init
-                0x0000000000101945                thread_set
-                0x0000000000101985                thread_wait
-                0x00000000001019b4                thread_exit
-                0x0000000000101a3f                thread_schedule
-                0x0000000000101b35                create
-                0x0000000000101bd2                ready
-                0x0000000000101c08                sleep
-                0x0000000000101c49                wake
-                0x0000000000101c8a                kill
-                0x0000000000101d0c                public_msg_do
-                0x0000000000101d44                debug2
-                0x0000000000101d84                debug
-                0x0000000000101ddb                debug1
-                0x0000000000101e4c                public_msg_main
-                0x0000000000101f60                buddy_init
-                0x000000000010211d                page_search
-                0x0000000000102164                page_alloc
-                0x000000000010226a                page_free
-                0x00000000001023d0                page_is_buddy
-                0x000000000010240b                alloc
-                0x0000000000102458                free
-                0x00000000001024d0                mod_time_show
-                0x00000000001026bb                mod_time_read_cmos
-                0x000000000010271b                mod_time_do
-                0x000000000010272d                mod_time_main
- .text          0x00000000001027b8      0x580 bin/lib.o
-                0x00000000001027b8                memset
-                0x00000000001027d0                memcpy
-                0x0000000000102805                strcpy
-                0x000000000010283e                strcat
-                0x0000000000102888                list_init
-                0x00000000001028a4                list_add
-                0x00000000001028f3                list_addtail
-                0x000000000010293f                list_search
-                0x0000000000102987                list_insert
-                0x00000000001029f4                list_unlink
-                0x0000000000102a2d                list_delete
-                0x0000000000102a67                list_empty
-                0x0000000000102adc                itoa
-                0x0000000000102d04                dbcd_to_str
+                0x0000000000100d68                main_thread_create
+                0x0000000000100e14                handle_intr
+                0x0000000000100e7e                handler_exception
+                0x0000000000100ef0                page_init
+                0x0000000000100ffe                gdt_init
+                0x0000000000101123                tss_init
+                0x00000000001011b2                idt_init
+                0x0000000000101672                post
+                0x0000000000101727                recv
+                0x0000000000101891                thread_init
+                0x0000000000101962                thread_set
+                0x00000000001019a2                thread_wait
+                0x00000000001019d1                thread_exit
+                0x0000000000101a5c                thread_schedule
+                0x0000000000101be1                create
+                0x0000000000101c7e                ready
+                0x0000000000101cb4                sleep
+                0x0000000000101cf5                wake
+                0x0000000000101d36                kill
+                0x0000000000101db6                lock
+                0x0000000000101dd2                unlock
+                0x0000000000101df0                public_msg_do
+                0x0000000000101f30                public_msg_main
+                0x000000000010201c                buddy_init
+                0x00000000001021d9                page_search
+                0x0000000000102220                page_alloc
+                0x0000000000102326                page_free
+                0x000000000010248c                page_is_buddy
+                0x00000000001024c7                alloc
+                0x0000000000102514                free
+                0x000000000010258c                mod_time_show
+                0x0000000000102777                mod_time_read_cmos
+                0x00000000001027c4                mod_time_do
+                0x00000000001027e0                mod_time_main
+ *fill*         0x0000000000102895        0x3 90909090
+ .text          0x0000000000102898      0x580 bin/lib.o
+                0x0000000000102898                memset
+                0x00000000001028b0                memcpy
+                0x00000000001028e5                strcpy
+                0x000000000010291e                strcat
+                0x0000000000102968                list_init
+                0x0000000000102984                list_add
+                0x00000000001029d3                list_addtail
+                0x0000000000102a1f                list_search
+                0x0000000000102a67                list_insert
+                0x0000000000102ad4                list_unlink
+                0x0000000000102b0d                list_delete
+                0x0000000000102b47                list_empty
+                0x0000000000102bbc                itoa
+                0x0000000000102de4                dbcd_to_str
  *(.gnu.warning)
 
 .fini
  *(.fini)
-                0x0000000000102d38                PROVIDE (__etext, .)
-                0x0000000000102d38                PROVIDE (_etext, .)
-                0x0000000000102d38                PROVIDE (etext, .)
+                0x0000000000102e18                PROVIDE (__etext, .)
+                0x0000000000102e18                PROVIDE (_etext, .)
+                0x0000000000102e18                PROVIDE (etext, .)
 
-.rodata         0x0000000000102d40      0x12c
+.rodata         0x0000000000102e20      0x128
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x0000000000102d40      0x12c bin/micro-kernel.o
-                0x0000000000102d80                msg_priority_table
+ .rodata        0x0000000000102e20      0x128 bin/micro-kernel.o
+                0x0000000000102e60                msg_priority_table
 
 .rodata1
  *(.rodata1)
@@ -251,13 +254,13 @@ LOAD bin/lib.o
 .eh_frame_hdr
  *(.eh_frame_hdr)
 
-.eh_frame       0x0000000000102e6c      0xb44
+.eh_frame       0x0000000000102f48      0xba8
  *(.eh_frame)
- .eh_frame      0x0000000000102e6c      0x3ac bin/arch.o
+ .eh_frame      0x0000000000102f48      0x3ac bin/arch.o
                                         0x454 (size before relaxing)
- .eh_frame      0x0000000000103218      0x5ec bin/micro-kernel.o
-                                        0x6ac (size before relaxing)
- .eh_frame      0x0000000000103804      0x1ac bin/lib.o
+ .eh_frame      0x00000000001032f4      0x650 bin/micro-kernel.o
+                                        0x710 (size before relaxing)
+ .eh_frame      0x0000000000103944      0x1ac bin/lib.o
                                         0x20c (size before relaxing)
 
 .gcc_except_table
@@ -265,7 +268,7 @@ LOAD bin/lib.o
 
 .exception_ranges
  *(.exception_ranges .exception_ranges*)
-                0x00000000001039b0                . = (ALIGN (0x1000) - ((0x1000 - .) & 0xfff))
+                0x0000000000103af0                . = (ALIGN (0x1000) - ((0x1000 - .) & 0xfff))
                 0x0000000000104000                . = DATA_SEGMENT_ALIGN (0x1000, 0x1000)
 
 .eh_frame
@@ -354,7 +357,7 @@ LOAD bin/lib.o
                 0x00000000001040f4                PROVIDE (edata, .)
                 0x00000000001040f4                __bss_start = .
 
-.bss            0x0000000000104100     0x2d80
+.bss            0x0000000000104100     0x2da0
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
  .bss           0x0000000000104100        0x4 bin/arch.o
@@ -375,25 +378,27 @@ LOAD bin/lib.o
                 0x00000000001054d4                ldt_ptr
                 0x00000000001054e0                idt_table
                 0x0000000000105ce0                ldt_table
- COMMON         0x0000000000105d20     0x1160 bin/micro-kernel.o
+ COMMON         0x0000000000105d20     0x1180 bin/micro-kernel.o
                 0x0000000000105d20                mod_time_id
                 0x0000000000105d24                kernel_reenter
                 0x0000000000105d28                handle_ret_addr
                 0x0000000000105d40                zone
+                0x0000000000105dd0                thread_realtime
                 0x0000000000105de0                thread_table
                 0x0000000000105e60                thread_queue_ready
-                0x0000000000105e68                thread_queue_sleep
-                0x0000000000105e70                handle_err_code
-                0x0000000000105e74                kernel_stack_top
-                0x0000000000105e78                thread_run
-                0x0000000000105e7c                thread_run_stack_top
-                0x0000000000105e80                page_dir
-                0x0000000000106e80                . = ALIGN ((. != 0x0)?0x4:0x1)
-                0x0000000000106e80                . = ALIGN (0x4)
-                0x0000000000106e80                . = ALIGN (0x4)
-                0x0000000000106e80                _end = .
-                0x0000000000106e80                PROVIDE (end, .)
-                0x0000000000106e80                . = DATA_SEGMENT_END (.)
+                0x0000000000105e68                thread_resched_lock
+                0x0000000000105e6c                thread_queue_sleep
+                0x0000000000105e74                handle_err_code
+                0x0000000000105e78                kernel_stack_top
+                0x0000000000105e7c                thread_run
+                0x0000000000105e80                thread_run_stack_top
+                0x0000000000105ea0                page_dir
+                0x0000000000106ea0                . = ALIGN ((. != 0x0)?0x4:0x1)
+                0x0000000000106ea0                . = ALIGN (0x4)
+                0x0000000000106ea0                . = ALIGN (0x4)
+                0x0000000000106ea0                _end = .
+                0x0000000000106ea0                PROVIDE (end, .)
+                0x0000000000106ea0                . = DATA_SEGMENT_END (.)
 
 .stab
  *(.stab)

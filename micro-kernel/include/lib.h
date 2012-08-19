@@ -15,7 +15,7 @@
 #include <lib/include/string.h>
 #include <lib/include/stdlib.h>
 #include <lib/include/bcd.h>
-
+#include <lib/include/atomic.h>
 
 #include <arch/include/io.h>
 #include <arch/include/lock.h>

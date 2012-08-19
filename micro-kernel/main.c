@@ -43,12 +43,7 @@ void kernel_main_thread()
 {
 	char* str = "main thread.\n";
 	print(str);
-	while(1)
-	{
-		for(int i=0;i<1000000;i++);
-		char *ch = "M";
-		print(ch);
-	}
+	while(1);
 }
 
 

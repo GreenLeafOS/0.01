@@ -14,7 +14,8 @@ KernelThread*	thread_run;
 u32* 			thread_run_stack_top;
 ListHead		thread_queue_ready;
 ListHead		thread_queue_sleep;
-
+Atomic			thread_resched_lock;
+KernelThread*	thread_realtime;
 
 StackFrame		thread_default_reg =
 {
@@ -55,8 +56,9 @@ void thread_init()
 	thread_run->thread_info.node.next = &thread->thread_info.node;
 	thread_run->thread_info.node.prev = &thread->thread_info.node;
 
-//	list_init(&thread_queue_ready);
+	thread_realtime = NULL;
 
+	thread_resched_lock.value = True;
 }
 
 
@@ -147,6 +149,17 @@ void thread_exit()
  */
 void thread_schedule()
 {
+	/* 检查是否允许抢占 */
+	if (thread_realtime && thread_resched_lock.value)
+	{
+		SetRunThread(thread_realtime);
+		thread_realtime = NULL;
+		lock();
+		if (thread_run->thread_info.ticks == 0)
+			thread_run->thread_info.ticks = (5-thread_run->thread_info.priority)* 4;
+		return;
+	}
+
 	/* 检查运行线程是否需要切换 */
 	if (thread_run->thread_info.state == THREAD_STATE_RUNNING)
 	{
@@ -167,6 +180,9 @@ void thread_schedule()
 		if (thread->thread_info.ticks && thread->thread_info.id != 0 &&
 			thread->thread_info.state == THREAD_STATE_READY)
 		{
+
+			/* 如果抢占了控制权的线程执行完毕,则重新允许抢占 */
+			if (!(thread_resched_lock.value)) unlock();
 			SetRunThread(thread);
 			return;
 		}
@@ -306,4 +322,33 @@ void kill(KernelThread* thread)
 				0};						// body_size
 		post(msg);
 	KernelUnlock();
+}
+
+
+
+
+
+/*
+ * SysApi lock
+ * 参数：无
+ * 功能：禁止内核抢占
+ * 返回值：无
+ */
+void lock()
+{
+	atomic_write(&thread_resched_lock,False);
+}
+
+
+
+
+/*
+ * SysApi unlock
+ * 参数：无
+ * 功能：允许内核抢占
+ * 返回值：无
+ */
+void unlock()
+{
+	atomic_write(&thread_resched_lock,True);
 }

@@ -9,6 +9,11 @@
 	dbcd_to_str(value,(char*)&date_info[date_pos]);	\
 	date_pos += len
 
+/* PC输入频率 */
+#define TIMER_FREQ     1193182L
+/* 输出频率 */
+#define HZ             100	// 10ms级
+
 #include "include/module.h"
 #include "include/sysapi.h"
 
@@ -56,9 +61,9 @@ void mod_time_read_cmos()
 {
 	for(int i=0;i<10;i++)
 	{
-		outb(0x71,i);
-		for(int j=0;j<10;j++);
+		outb(0x70,i);
 		*(((u8*)&cmos_info) + i) = inb(0x71);
+
 	}
 }
 
@@ -66,16 +71,11 @@ void mod_time_read_cmos()
 
 void mod_time_do(MsgHead msg)
 {
-	// if(msg.vector == MSG_INTR_CLOCK)
+	if(msg.vector == MSG_INTR_CLOCK)
 	{
-//		char ch = 't';
-//		print(&ch);
 		mod_time_read_cmos();
 		mod_time_show();
 	}
-/*	char *ch = "t";
-	itoa(msg.vector,ch);
-	print(&ch); */
 	return;
 }
 
@@ -83,16 +83,20 @@ void mod_time_do(MsgHead msg)
 id_t mod_time_id;
 void mod_time_main()
 {
+	/* 注册时钟中断 */
 	msg_reg.param = MSG_INTR_CLOCK;
 	msg_reg.sender = mod_time_id;
 	post(msg_reg);
+
+	/* 初始化8253 */
+	outb(TIMER_MODE,RATE_GENERATOR);
+	outb(TIMER0, (u8)(TIMER_FREQ/HZ));
+	outb(TIMER0, (u8)((TIMER_FREQ/HZ) >> 8));
+
 	mod_time_show();
 	while(1)
 	{
 		MsgHead msg = recv();		// 获取消息
 		mod_time_do(msg);			// 处理消息
-		//for(int i=0;i<1000000;i++);
-		char *ch = "T";
-		print(ch);
 	}
 }

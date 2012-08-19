@@ -114,7 +114,8 @@ typedef struct s_tss {
 	u32	ldt;
 	u16	trap;
 	u16	iobase;		/* I/O位图基址大于或等于TSS段界限，就表示没有I/O许可位图 */
-	u8	iomap[2];
+	u8	iomap[0];
+	u16	end;
 }TSS;
 
 #endif /* DESC_H_ */
