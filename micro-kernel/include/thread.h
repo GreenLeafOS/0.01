@@ -12,7 +12,7 @@
 
 
 /* ThreadDesc.msg_queue[] */
-#define THREAD_NR_MSGQUEUE		64
+#define THREAD_NR_MSGQUEUE		512
 
 /* ThreadDesc */
 typedef struct kernel_thread_desc
@@ -23,7 +23,7 @@ typedef struct kernel_thread_desc
 	u16  priority;					/* 优先级 */
 	u16  ticks;						/* 时间片 */
 	u32  stack_top;					/* 栈顶 */
-	u32 msg_queue_bmp;				/* 消息队列位图 */
+	u32 msg_queue_bmp[THREAD_NR_MSGQUEUE/32];		/* 消息队列位图 */
 	MsgHead msg_queue[THREAD_NR_MSGQUEUE];			/* 消息队列 */
 }ThreadDesc;
 

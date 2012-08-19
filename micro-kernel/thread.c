@@ -144,25 +144,26 @@ void thread_schedule()
 		{
 			thread_run->thread_info.ticks = (5-thread_run->thread_info.priority)* 2;
 			thread_run->thread_info.state = THREAD_STATE_READY;
-			list_addtail(&thread_queue_ready,&thread_run->thread_info.node);
 		}
 	}
 
 	/* 搜索可执行线程 */
 	int i = 0;
+	KernelThread *thread = thread_run->thread_info.node.next;
 	while(1)
 	{
-		KernelThread *thread =(KernelThread*)list_search(&thread_queue_ready,i++);
+		__asm(".global ch\nch:\n");
+		thread = thread->thread_info.node.next;
 		if (thread == NULL)
 		{
 			thread_run = thread_table[0];
 			thread_run->thread_info.state = THREAD_STATE_RUNNING;
-			list_unlink(&thread_run->thread_info.node);
 			thread_run_stack_top =(u32*)&thread_run->thread_info.stack_top;
 			return;
 		}
 		if (thread->thread_info.id == 0)
 		{
+			__asm(".global ch1\nch1:\n");
 			continue;
 		}
 		if (thread->thread_info.ticks)
@@ -170,8 +171,6 @@ void thread_schedule()
 			thread_run = thread;
 			thread_run->thread_info.state = THREAD_STATE_RUNNING;
 			thread_run_stack_top =(u32*)&thread_run->thread_info.stack_top;
-
-			list_unlink(&thread_run->thread_info.node);
 			return;
 		}
 	}
@@ -189,8 +188,8 @@ void thread_schedule()
 KernelThread* create()
 {
 	KernelLock();
-		/* 向内存分配器申请一个页的空间 */
-		KernelThread *new_space = (KernelThread*)mem_page_alloc();
+		/* 向内存分配器申请2个页的空间 */
+		KernelThread *new_space = (KernelThread*)alloc(2);
 		if (new_space == NULL) return NULL;
 
 		/* 把新线程指针写入线程表并获取一个可用id */
@@ -225,7 +224,7 @@ void ready(KernelThread* thread)
 		thread->thread_info.state = THREAD_STATE_READY;
 
 		/* 加入就绪队列 */
-		list_add(&thread_queue_ready,&thread->thread_info.node);
+		list_addtail(&thread_queue_ready,&thread->thread_info.node);
 	KernelUnlock();
 }
 

@@ -28,7 +28,7 @@ MsgHead			recv();							/* 接收消息 */
 void			lock();							/* 禁止内核抢占 */
 void			unlock();						/* 允许内核抢占 */
 /* phypage.c */
-PhyPage			alloc();						/* 分配物理页框 */
-void			free(PhyPage* page);			/* 释放物理页框 */
+void*			alloc(u32 size);				/* 分配物理页框 */
+void			free(void* addr);				/* 释放物理页框 */
 
 #endif /* SYSAPI_H_ */

@@ -12,12 +12,16 @@
 #include <lib/include/round_queue.h>
 #include <lib/include/setbit.h>
 #include <lib/include/list.h>
+#include <lib/include/string.h>
+#include <lib/include/stdlib.h>
+#include <lib/include/bcd.h>
 
 
+#include <arch/include/io.h>
 #include <arch/include/lock.h>
 #include <arch/include/memory.h>
 #include <arch/include/table.h>
 #include <arch/include/print.h>
-
+#include <arch/include/cmos.h>
 
 #endif /* LIB_H_ */

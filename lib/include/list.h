@@ -11,16 +11,17 @@
 /* 节点没有数据，仅仅起链接作用 */
 typedef struct list_node
 {
-	struct list_node* next;
 	struct list_node* prev;
+	struct list_node* next;
 }ListNode;
 
 
 /* 链表头结构 */
 typedef struct list_head
 {
-	struct list_node* next;
+
 	struct list_node* prev;
+	struct list_node* next;
 }ListHead;
 
 

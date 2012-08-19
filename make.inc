@@ -2,7 +2,7 @@ asm					=	as
 asm_flags			=	-I ../arch/include/ -I ../micro-kernel/include/
 
 cc					=	gcc
-cc_flags			=	-I ../ -c -std=c99
+cc_flags			=	-I ../ -c -std=c99 -fno-stack-protector
 						
 cpp					=	g++
 cpp_flags			=	-c -fno-rtti \

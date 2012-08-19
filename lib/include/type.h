@@ -17,19 +17,6 @@ typedef void (*FunAddr)();
 typedef int Bool;
 
 
-struct point_list_info
-{
-	point *head;
-	point *tail;
-};
-
-struct int_list_info
-{
-	u8	head;
-	u8	tail;
-};
-
-
 typedef unsigned long Result;
 
 #define S_OK			1

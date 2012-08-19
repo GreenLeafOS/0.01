@@ -4,11 +4,11 @@
 .extern		idt_init
 .extern		tss_init
 .extern		init_8259A
-.extern		mem_init
-.extern		page_init
+.extern		buddy_init
 
 .extern		kernel_main
 
+.section 	.text
 _start:
 	call	gdt_init
 	mov		$16,%ax
@@ -26,7 +26,7 @@ _start:
 	call	idt_init
 	call	tss_init
 
-	call	mem_init
-	call	page_init
+	call	buddy_init
+#	call	page_init
 
 	jmp		kernel_main

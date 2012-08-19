@@ -7,6 +7,8 @@
 
 .include	"head.inc"
 
+.section 	.text
+
 /* thread.c */
 .extern		thread_schedule
 .extern		thread_wait

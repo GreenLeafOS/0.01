@@ -2,11 +2,13 @@
 #				Makefile for OS					#
 #					系统编译						#
 #################################################
-entrypoint			= 	0x100000
-memoryinfo			=	0x30000
+entrypoint			= 0x100000
+biosinfo			= 0x30000
 #------------连接-----------
 ld					=	ld
-ld_flags			=	-s -Ttext $(entrypoint) -section-start memory=$(memoryinfo) -Map bin/kernel.map
+ld_flags			=	-s -Ttext $(entrypoint) -section-start bios=$(biosinfo) -Map bin/kernel.map
+# -T link.lds -Map bin/kernel.map -s
+#-s -Ttext $(entrypoint) -section-start memory=$(memoryinfo) -Map bin/kernel.map
 #---------最终目标----------
 image		= 	bin/kernel.img
 #------------目标-----------

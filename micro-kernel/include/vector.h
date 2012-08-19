@@ -66,6 +66,7 @@ extern const int msg_priority_table[48];
 
 extern MsgHead msg_ok;
 extern MsgHead msg_max;
+extern MsgHead msg_reg;
 
 #endif /* MSG_H_ */
 

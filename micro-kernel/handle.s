@@ -9,7 +9,7 @@
 .include "handle.inc"
 
 
-
+.section	.text
 /*
  * handle save
  * ²ÎÊı£ºÎŞ

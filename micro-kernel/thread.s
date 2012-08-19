@@ -9,7 +9,7 @@
 .include "handle.inc"
 
 
-
+.section	.text
 /*
  * SysApi wait
  * ²ÎÊý£ºÎÞ

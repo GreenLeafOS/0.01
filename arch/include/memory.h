@@ -41,15 +41,10 @@ struct ARDS
 	u32 Type;
 };
 
-void mem_init();
-void* mem_page_alloc();
-void mem_page_busy(u32 index);
-void mem_page_free(u32 index);
-u32 mem_page_getfree();
-
 extern struct ARDS mem_info[12];
 extern int mem_size;
 extern u32* mem_used_map;
 extern int mem_used_map_max;
 extern int mem_mcr_number;
+
 #endif /* MEMORY_H_ */

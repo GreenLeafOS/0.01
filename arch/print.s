@@ -2,17 +2,17 @@
 disp_pos:
 		.long	0
 
-
+.global disp_pos
 
 .section .text
 .global print
 
 print:
-	push	%ebp
-	mov	 	%esp,%ebp
+	pushl	%ebp
+	movl 	%esp,%ebp
 
-	mov		8(%ebp),%esi
-	mov		(disp_pos),%edi
+	movl	8(%ebp),%esi
+	movl	(disp_pos),%edi
 	mov		$0x0F,%ah
 _print_loop:
 	lodsb
@@ -20,24 +20,25 @@ _print_loop:
 	jz		_print_end
 	cmp		$0x0A,%al
 	jnz		_print_write
-	push	%eax
-	mov		%edi,%eax
+	pushl	%eax
+	movl	%edi,%eax
 	mov		$160,%bl
 	div		%bl
-	and		$0x0FF,%eax
-	inc		%eax
+	andl	$0x0FF,%eax
+	incl	%eax
 	mov		$160,%bl
 	mul		%bl
-	mov		%eax,%edi
-	pop		%eax
+	movl	%eax,%edi
+	popl	%eax
 	jmp		_print_loop
 _print_write:
 	mov		%ax,%gs:(%edi)
-	add		$2,%edi
+	addl	$2,%edi
 	jmp		_print_loop
 
 _print_end:
-	mov		%edi,(disp_pos)
+	movl	%edi,(disp_pos)
 
-	pop		%ebp
+	popl	%ebp
 	ret
+

@@ -6,7 +6,7 @@
  */
 .global memset
 
-
+.section	.text
 memset:
 	push %ebp
 	mov %esp,%ebp

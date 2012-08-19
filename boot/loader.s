@@ -37,6 +37,9 @@ _start:
 	/* 获取内存数量 */
 	call	get_mem_info
 
+	/* 获取CMOS */
+	call	get_cmos
+
 	/* 输出字符串 */
 	call	disp_str
 
@@ -86,6 +89,30 @@ _get_mem_info_loop:
 	ret
 _get_mem_info_fail:
 	movl	$0,%es:(MCRNumber)
+	ret
+
+/************************************************************************/
+/*						获取CMOS信息
+/*					    get_cmos
+/*	读入 es:di 中
+/************************************************************************/
+get_cmos:
+	mov		$0x3000,%ax
+	mov		%ax,%es
+	mov		$0x300,%di	/* 偏移 */
+	mov		$256,%cx	/* 循环次数 */
+
+	xor		%ax,%ax
+_get_coms_loop:
+	mov		%ah,%al		/* 送CMOS内部地址 */
+	out		%al,$0x70
+	nop
+	in		$0x71,%al	/* 读数据 */
+	mov		%al,%es:(%di)	/* 保存数据 */
+	inc		%ah			/* 调整CMOS内部地址 */
+	inc		%di			/* 调整内存偏移 */
+	loop	_get_coms_loop
+
 	ret
 /************************************************************************/
 /*                      在屏幕上显示字符串

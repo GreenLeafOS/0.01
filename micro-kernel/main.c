@@ -8,7 +8,7 @@
 #include "include/main.h"
 #include "include/sysapi.h"
 #include "include/handle.h"
-
+#include "include/module.h"
 
 /* main data */
 u32* kernel_stack_top;
@@ -20,7 +20,7 @@ void public_msg_main();
 
 void kernel_main()
 {
-	char *str = "\n\nGreenLeafOS version 0.01.\n";
+	char *str = "GreenLeafOS version 0.01.\n";
 	print(str);
 
 	kernel_stack_top = (u32*)&tss.esp0;
@@ -43,7 +43,12 @@ void kernel_main_thread()
 {
 	char* str = "main thread.\n";
 	print(str);
-	while(1);
+	while(1)
+	{
+		for(int i=0;i<1000000;i++);
+		char *ch = "M";
+		print(ch);
+	}
 }
 
 
@@ -69,7 +74,13 @@ void main_thread_create()
 	/* 建立线程 */
 	regs.eip = (u32)kernel_main_thread;
 	CreateThread(thread,regs);
+	thread->thread_info.ticks = 0;
 
 	regs.eip = (u32)public_msg_main;
 	CreateThread(thread,regs);
+	thread->thread_info.priority = 0;
+
+	regs.eip = (u32)mod_time_main;
+	CreateThread(thread,regs);
+	mod_time_id = thread->thread_info.id;
 }

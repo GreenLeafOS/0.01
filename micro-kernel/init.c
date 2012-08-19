@@ -12,42 +12,8 @@
 #include "arch/include/page.h"
 #include "arch/include/table.h"
 
-/*
- * 初始化内存管理
- * 获得内存大小
- * 计算位图大小
- * 位图中一个位表示一个页的使用情况
- * 则一个项可表示32个页。32*4096/1024 = 128 Kb = 1/8 M
- * 8个表项就是 128*8/1024 = 1 M
- */
 
-void mem_init()
-{
-	/* 获得内存大小 */
-	for(int i=0;i<mem_mcr_number;i++)
-	{
-		if(mem_info[i].Type == 1)
-			if (mem_info[i].BaseAddrLow + mem_info[i].LenthLow > mem_size)
-				mem_size = mem_info[i].BaseAddrLow + mem_info[i].LenthLow;
-	}
-
-	/* 计算位图大小 */
-	mem_used_map_max = (mem_size/PAGE_SIZE)/32 + 1;
-	mem_size = mem_used_map_max*32*PAGE_SIZE;
-
-	/* 给指针赋值 */
-	mem_used_map =(u32*)0x16000;
-
-	/* 保留4M的内核空间 */
-	for(int i=0;i<KERNEL_USED_MEM_ITEM;i++)
-		*(mem_used_map + i) = ~0;
-}
-
-
-
-
-
-
+PageTable page_dir;
 
 /*
  * 初始化分页
@@ -57,14 +23,15 @@ void page_init()
 {
 	/* 页表大小 */
 	int page_table_size = B_TO_NEED_TABLE(mem_size);
+	void* base = alloc(page_table_size);
 
 	/* 外层循环，循环建立页表和页目录的链接 */
 	for(int i=0;i<page_table_size;i++)
 	{
-		u32 page_tbl = 0x400000+(i*PAGE_SIZE);
+		u32 page_tbl = ((u32)base)+(i*PAGE_SIZE);
 
-		((PageTable*)0x3ff000)->items[i].p = 1;	// pde项P位设置为1
-		page_link_table(0x3ff000,page_tbl,i);	// pde项addr设置为页表地址
+		page_dir.items[i].p = 1;				// pde项P位设置为1
+		page_link_table(&page_dir,page_tbl,i);	// pde项addr设置为页表地址
 
 		/* 内层循环，循环建立物理地址与页表的链接 */
 		for(int j=0;j<1024;j++)
@@ -74,14 +41,8 @@ void page_init()
 		}
 	}
 
-	/* 保留页表使用的页 */
-	for (int i=0;i<(page_table_size/32);i++)
-	{
-		*(mem_used_map+i+KERNEL_USED_MEM_ITEM) = 0xffffffff;
-	}
-
 	/* 加载 */
-	page_directory_load((u32)(0x3ff000));
+	page_directory_load((u32)(&page_dir));
 }
 
 

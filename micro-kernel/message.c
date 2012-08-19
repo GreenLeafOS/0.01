@@ -10,7 +10,7 @@
 /* message data */
 MsgHead msg_ok = {MSG_RET_OK,MSG_PRIORITY_RET};
 MsgHead msg_max = {MSG_RET_MAX,MSG_PRIORITY_RET};
-
+MsgHead msg_reg = {MSG_THREAD_REGPUB,MSG_PRIORITY_REALTIME,0,1};
 /*
  * SysApi post
  * 参数：消息头
@@ -25,7 +25,11 @@ void post(MsgHead msg)
 		/* 搜索消息队列中的空闲区域 */
 		int id = bmp_search(&thread->thread_info.msg_queue_bmp,THREAD_NR_MSGQUEUE);
 
-		if (thread == NULL || id == -1) return;
+		if (thread == NULL || id == -1)
+		{
+			KernelUnlock();
+			return;
+		}
 
 		/* 写入信息 */
 		bmp_set(&thread->thread_info.msg_queue_bmp,id);

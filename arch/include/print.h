@@ -9,6 +9,8 @@
 #define PRINT_H_
 
 void print(char *str);
+int print_pos(char *str,int pos);
+
 extern int disp_pos;
 
 #endif /* PRINT_H_ */
