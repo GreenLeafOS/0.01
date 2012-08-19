@@ -63,6 +63,7 @@ extern KernelThread*	thread_run;
 extern u32*				thread_run_stack_top;
 extern ListHead			thread_queue_ready;
 extern ListHead			thread_queue_sleep;
+extern StackFrame		thread_default_reg;
 
 /* thread macro */
 #define CreateThread(thread,regs)	\
@@ -71,5 +72,9 @@ extern ListHead			thread_queue_sleep;
 		*(StackFrame*)thread->thread_info.stack_top = regs;			\
 		ready(thread)
 
+#define SetRunThread(thread)		\
+		thread_run = (KernelThread*)thread;								\
+		thread_run->thread_info.state = THREAD_STATE_RUNNING;			\
+		thread_run_stack_top =(u32*)&thread_run->thread_info.stack_top
 
 #endif /* THREAD_H_ */

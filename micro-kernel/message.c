@@ -56,14 +56,18 @@ MsgHead recv()
 	KernelLock();
 		int priority = 10;
 		int id;
-
+		Bool empty = False;
 		/* 循环等待接收消息 */
-		while(thread_run->thread_info.msg_queue_bmp == 0)
+		for(int i=0;i<THREAD_NR_MSGQUEUE/32;i++)
 		{
-			thread_run->thread_info.state == THREAD_STATE_RECVING;
+			empty = (thread_run->thread_info.msg_queue_bmp[i] == 0);
+		}
+		if (empty)
+		{
+			thread_run->thread_info.state = THREAD_STATE_RECVING;
+			__asm volatile("":::"memory");
 			wait();
 		}
-
 
 		/* 选择优先级最高的消息 */
 		for(int i=0;i<THREAD_NR_MSGQUEUE;i++)

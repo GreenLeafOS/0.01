@@ -55,32 +55,13 @@ void kernel_main_thread()
 void main_thread_create()
 {
 	KernelThread* thread;
-	StackFrame regs;
-	u16 code = gdt_get_sel(KERNEL_CODE,0);
-	u16 data = gdt_get_sel(KERNEL_DATA,0);
-	u16 video = gdt_get_sel(USER_VIDEO,0);
-
-
-	regs.ds = data;
-	regs.es = data;
-	regs.fs = data;
-	regs.gs = video;
-
-	regs.ss = data;
-
-	regs.cs = code;
-	regs.eflags = 0x1202;	// IF = 1,IOPL = 1, bit 2 is always 1.
 
 	/* 建立线程 */
-	regs.eip = (u32)kernel_main_thread;
-	CreateThread(thread,regs);
-	thread->thread_info.ticks = 0;
+	thread_default_reg.eip = (u32)public_msg_main;
+	CreateThread(thread,thread_default_reg);
 
-	regs.eip = (u32)public_msg_main;
-	CreateThread(thread,regs);
-	thread->thread_info.priority = 0;
 
-	regs.eip = (u32)mod_time_main;
-	CreateThread(thread,regs);
+	thread_default_reg.eip = (u32)mod_time_main;
+	CreateThread(thread,thread_default_reg);
 	mod_time_id = thread->thread_info.id;
 }

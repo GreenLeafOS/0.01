@@ -59,8 +59,8 @@ Desc desc_create(u32 base, u32 limit, u16 attribute);
 u16 gdt_get_sel(int index,u8 rpl);
 u16 ldt_get_sel(int index,u8 rpl);
 
-
-
+#define GdtGetSel(index,rpl) (index) << 3 + rpl + 0
+#define LdtGetSel(index,rpl) (index) << 3 + rpl + 4
 
 /************************************************************************/
 /*							ÃÅÃèÊö·û

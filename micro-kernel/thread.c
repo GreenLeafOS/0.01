@@ -6,6 +6,7 @@
  */
 
 #include "include/sysapi.h"
+#include "include/main.h"
 
 /* thread data */
 KernelThread*	thread_table[NR_THREAD];
@@ -15,7 +16,19 @@ ListHead		thread_queue_ready;
 ListHead		thread_queue_sleep;
 
 
-
+StackFrame		thread_default_reg =
+{
+		GdtGetSel(USER_VIDEO,0),		// gs
+		GdtGetSel(KERNEL_DATA,0),		// fs
+		GdtGetSel(KERNEL_DATA,0),		// es
+		GdtGetSel(KERNEL_DATA,0),		// ds
+		0,0,0,0,0,0,0,0,
+		0,								// eip
+		GdtGetSel(KERNEL_CODE,0),		// cs
+		0x1202,							// eflags
+		0,								// esp
+		GdtGetSel(KERNEL_DATA,0)		// ss
+};
 
 /*
  * thread init
@@ -26,10 +39,24 @@ ListHead		thread_queue_sleep;
 void thread_init()
 {
 	memset(&thread_table[0],0,sizeof(thread_table));
-	thread_run = thread_table[0];
-	thread_run_stack_top =&thread_run->thread_info.stack_top;
-	list_init(&thread_queue_ready);
 	list_init(&thread_queue_sleep);
+
+	/* 建立线程 */
+	KernelThread* thread = create();
+	thread_default_reg.eip = (u32)kernel_main_thread;					// eip
+	thread->thread_info.stack_top -= sizeof(thread_default_reg);
+	*(StackFrame*)thread->thread_info.stack_top = thread_default_reg;
+
+	thread->thread_info.ticks = 0;						// 时间片为0
+	SetRunThread(thread_table[0]);						// 设置为运行线程
+
+	thread_queue_ready.next = &thread->thread_info.node;
+	thread_queue_ready.prev = &thread->thread_info.node;
+	thread_run->thread_info.node.next = &thread->thread_info.node;
+	thread_run->thread_info.node.prev = &thread->thread_info.node;
+
+//	list_init(&thread_queue_ready);
+
 }
 
 
@@ -68,9 +95,6 @@ void thread_wait()
 {
 	/* 从就绪队列移除 */
 	list_unlink(&thread_run->thread_info.node);
-
-	/* 设置状态 */
-	thread_run->thread_info.state = THREAD_STATE_SLEEPING;
 
 	/* 加入睡眠队列 */
 	list_add(&thread_queue_sleep,&thread_run->thread_info.node);
@@ -123,22 +147,10 @@ void thread_exit()
  */
 void thread_schedule()
 {
-	if (thread_run == NULL)
-	{
-		thread_run = thread_table[0];
-		thread_run->thread_info.state = THREAD_STATE_RUNNING;
-		thread_run_stack_top =(u32*)&thread_run->thread_info.stack_top;
-	}
-
-	// 检查是否打开内核抢占 if ()
-
 	/* 检查运行线程是否需要切换 */
 	if (thread_run->thread_info.state == THREAD_STATE_RUNNING)
 	{
-		if (thread_run->thread_info.ticks--)
-		{
-			return;
-		}
+		if (thread_run->thread_info.ticks--) return;
 		/* 时间片已完，重置 */
 		else
 		{
@@ -148,32 +160,19 @@ void thread_schedule()
 	}
 
 	/* 搜索可执行线程 */
-	int i = 0;
-	KernelThread *thread = thread_run->thread_info.node.next;
-	while(1)
+	KernelThread *thread = (KernelThread *)thread_queue_ready.next;
+	while(thread != NULL && thread != (KernelThread*)&thread_queue_ready)
 	{
-		__asm(".global ch\nch:\n");
-		thread = thread->thread_info.node.next;
-		if (thread == NULL)
+		thread = (KernelThread*)thread->thread_info.node.next;
+		if (thread->thread_info.ticks && thread->thread_info.id != 0 &&
+			thread->thread_info.state == THREAD_STATE_READY)
 		{
-			thread_run = thread_table[0];
-			thread_run->thread_info.state = THREAD_STATE_RUNNING;
-			thread_run_stack_top =(u32*)&thread_run->thread_info.stack_top;
-			return;
-		}
-		if (thread->thread_info.id == 0)
-		{
-			__asm(".global ch1\nch1:\n");
-			continue;
-		}
-		if (thread->thread_info.ticks)
-		{
-			thread_run = thread;
-			thread_run->thread_info.state = THREAD_STATE_RUNNING;
-			thread_run_stack_top =(u32*)&thread_run->thread_info.stack_top;
+			SetRunThread(thread);
 			return;
 		}
 	}
+	/* 没有搜索到，执行空闲系统线程 */
+	SetRunThread(thread_table[0]);
 }
 
 

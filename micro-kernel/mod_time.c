@@ -57,6 +57,7 @@ void mod_time_read_cmos()
 	for(int i=0;i<10;i++)
 	{
 		outb(0x71,i);
+		for(int j=0;j<10;j++);
 		*(((u8*)&cmos_info) + i) = inb(0x71);
 	}
 }
@@ -90,5 +91,8 @@ void mod_time_main()
 	{
 		MsgHead msg = recv();		// 获取消息
 		mod_time_do(msg);			// 处理消息
+		//for(int i=0;i<1000000;i++);
+		char *ch = "T";
+		print(ch);
 	}
 }

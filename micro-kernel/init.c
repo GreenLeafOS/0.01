@@ -7,6 +7,7 @@
 
 #include "include/sysapi.h"
 #include "include/handle.h"
+#include "include/main.h"
 
 #include "arch/include/desc.h"
 #include "arch/include/page.h"
@@ -82,10 +83,10 @@ void tss_init()
 	int i = gdt_add(desc_create((u32)&tss,sizeof(tss)-1,DA_386TSS));
 	gdt_load();
 	tss.iobase = sizeof(tss);
-	tss.ss0 = gdt_get_sel(1,0);
+	tss.ss0 = GdtGetSel(KERNEL_DATA,0);
 	tss.esp0 = 0x80000;
 
-	tss_sel = gdt_get_sel(i,0);
+	tss_sel = GdtGetSel(i,0);
 	tss_load(tss_sel);
 }
 

@@ -80,6 +80,9 @@ void public_msg_main()
 	{
 		MsgHead msg = recv();		// 获取消息
 		public_msg_do(msg);			// 处理消息
+		for(int i=0;i<1000000;i++);
+		char *ch = "S";
+		print(ch);
 	}
 }
 
