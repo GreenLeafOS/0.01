@@ -15,6 +15,8 @@
 void mod_public_msg_main();
 id_t mod_public_msg_id;
 
+
+
 /* mod_time.c */
 typedef struct time
 {
@@ -31,4 +33,9 @@ void mod_time_main();
 id_t mod_time_id;
 Time mod_time_sysclock;
 
+
+
+/* mod_handle.c */
+void mod_handle_main();
+id_t mod_time_id;
 #endif /* MODULE_H_ */

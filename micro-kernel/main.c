@@ -15,9 +15,10 @@ u32* kernel_stack_top;
 int kernel_reenter;
 
 
-void main_thread_create();
-void public_msg_main();
 
+/*
+ * 内核主函数
+ */
 void kernel_main()
 {
 	char *str = "GreenLeafOS version 0.01.\n";
@@ -36,27 +37,32 @@ void kernel_main()
 }
 
 
+
+
+
 /*
+ * kernel_main_thread
  * 主线程
  */
 void kernel_main_thread()
 {
-	char* str = "main thread.\n";
-	print(str);
 	while(1);
 }
 
 
+
+
+
+
+/*
+ * main_thread_create
+ * 创建线程
+ */
 void main_thread_create()
 {
 	KernelThread* thread;
 
 	/* 建立线程 */
-	thread_default_reg.eip = (u32)public_msg_main;
-	CreateThread(thread,thread_default_reg);
-
-
-	thread_default_reg.eip = (u32)mod_time_main;
-	CreateThread(thread,thread_default_reg);
-	mod_time_id = thread->thread_info.id;
+	CreateThread(mod_public_msg,	thread,		thread_default_reg);
+	CreateThread(mod_time,			thread,		thread_default_reg);
 }

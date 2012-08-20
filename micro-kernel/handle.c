@@ -7,6 +7,7 @@
 
 #include "include/sysapi.h"
 #include "include/handle.h"
+#include "include/module.h"
 
 /* handle data */
 int	handle_err_code;
@@ -27,7 +28,7 @@ void handle_intr(int irq_num)
 	MsgHead msg = {MSG_INTR + irq_num,
 			msg_priority_table[MSG_INTR + irq_num],
 			0,
-			1,
+			mod_public_msg_id,
 			NULL,
 			0};
 	post(msg);
@@ -51,7 +52,7 @@ void handler_exception(int vec_num, int err_code)
 	MsgHead msg = {MSG_EXCP + vec_num,
 				msg_priority_table[MSG_EXCP + vec_num],
 				0,
-				1,
+				mod_public_msg_id,
 				&err_code,
 				sizeof(int)};
 	post(msg);

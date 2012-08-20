@@ -27,7 +27,7 @@ struct msg_reg_item
  * public_msg_do
  * 消息处理
  */
-void public_msg_do(MsgHead msg)
+void mod_public_msg_do(MsgHead msg)
 {
 	if (msg.vector == MSG_THREAD_REGPUB)
 	{
@@ -68,17 +68,17 @@ void public_msg_do(MsgHead msg)
 
 
 /*
- * public_msg_main
+ * mod_public_msg_main
  * 主循环
  */
-void public_msg_main()
+void mod_public_msg_main()
 {
 	char *str = "public_msg_main.\n";
 	print(str);
 	while(1)
 	{
 		MsgHead msg = recv();		// 获取消息
-		public_msg_do(msg);			// 处理消息
+		mod_public_msg_do(msg);		// 处理消息
 	}
 }
 

@@ -12,6 +12,7 @@
 
 void kernel_main();
 void kernel_main_thread();
+void main_thread_create();
 
 extern u32* kernel_stack_top;
 extern int kernel_reenter;

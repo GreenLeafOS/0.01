@@ -68,10 +68,12 @@ extern Atomic			thread_resched_lock;
 extern KernelThread*	thread_realtime;
 
 /* thread macro */
-#define CreateThread(thread,regs)	\
+#define CreateThread(name,thread,regs)	\
+		regs.eip = (u32)name##_main;								\
 		thread = create();											\
 		thread->thread_info.stack_top -= sizeof(regs);				\
 		*(StackFrame*)thread->thread_info.stack_top = regs;			\
+		name##_id = thread->thread_info.id;							\
 		ready(thread)
 
 #define SetRunThread(thread)		\

@@ -117,6 +117,7 @@ void mod_time_main()
 	/* 注册时钟中断 */
 	msg_reg.param = MSG_INTR_CLOCK;
 	msg_reg.sender = mod_time_id;
+	msg_reg.receiver = mod_public_msg_id;
 	post(msg_reg);
 
 	/* 初始化8253 */

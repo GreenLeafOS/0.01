@@ -6,11 +6,13 @@
  */
 
 #include "include/sysapi.h"
+#include "include/module.h"
+
 
 /* message data */
 MsgHead msg_ok = {MSG_RET_OK,MSG_PRIORITY_RET};
 MsgHead msg_max = {MSG_RET_MAX,MSG_PRIORITY_RET};
-MsgHead msg_reg = {MSG_THREAD_REGPUB,MSG_PRIORITY_REALTIME,0,1};
+MsgHead msg_reg = {MSG_THREAD_REGPUB,MSG_PRIORITY_REALTIME};
 
 
 

@@ -37,6 +37,7 @@ typedef struct message_head
 
 /* Message data */
 extern MsgHead msg_ok;
-
+extern MsgHead msg_max;
+extern MsgHead msg_reg;
 
 #endif /* MESSAGE_H_ */
