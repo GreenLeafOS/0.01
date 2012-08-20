@@ -11,6 +11,7 @@
 #include "thread.h"
 #include "message.h"
 #include "phypage.h"
+#include "handle.h"
 
 /* thread.c */
 KernelThread*	create();						/* 创建线程 */
@@ -30,5 +31,11 @@ MsgHead			recv();							/* 接收消息 */
 /* phypage.c */
 void*			alloc(u32 size);				/* 分配物理页框 */
 void			free(void* addr);				/* 释放物理页框 */
+/* handle.c */
+Handle*			new(Handle handle);				/* 分配对象句柄 */
+void			delete(Handle *handle);			/* 释放对象句柄 */
+void			set(Handle handle);				/* 写入句柄 */
+Handle			get(u32 id);					/* 获取句柄 */
+
 
 #endif /* SYSAPI_H_ */

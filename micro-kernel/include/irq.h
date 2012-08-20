@@ -5,8 +5,8 @@
  *      Author: greenleaf
  */
 
-#ifndef HANDLE_H_
-#define HANDLE_H_
+#ifndef IRQ_H_
+#define IRQ_H_
 
 /* handle function */
 void	handle_intr(int irq_num);

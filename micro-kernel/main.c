@@ -14,8 +14,6 @@
 u32* kernel_stack_top;
 int kernel_reenter;
 
-
-
 /*
  * ÄÚºËÖ÷º¯Êı
  */
