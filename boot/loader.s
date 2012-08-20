@@ -6,6 +6,8 @@
 
 .include "gdt.s"
 
+boot_drive = 0x500
+
 Kernel_Start		=	4
 Kernel_End			=	63
 Kernel_Size			=	Kernel_End - Kernel_Start + 1
@@ -30,6 +32,7 @@ _start:
 	mov	$0x1000, %ax
 	mov	%ax,%es
 	mov	$0, %bx
+	mov	(boot_drive),%dl
 	mov	$Kernel_Start, %cl
 	mov	$Kernel_Size,  %al
 	call read_sector

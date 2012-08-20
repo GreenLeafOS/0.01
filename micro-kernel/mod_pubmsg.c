@@ -1,16 +1,16 @@
 /*
- * pubmsg.c
+ * mod_pubmsg.c
  *
  *  Created on: 2012-8-17
  *      Author: greenleaf
  */
 
 
+#include "include/module.h"
 #include "include/sysapi.h"
-#include "include/lib.h"
+
 
 #define NR_MSG_REG		16
-
 
 
 /* msg_reg_item */
@@ -24,6 +24,7 @@ struct msg_reg_item
 
 
 /*
+ * public_msg_do
  * 消息处理
  */
 void public_msg_do(MsgHead msg)
@@ -67,6 +68,7 @@ void public_msg_do(MsgHead msg)
 
 
 /*
+ * public_msg_main
  * 主循环
  */
 void public_msg_main()

@@ -27,7 +27,7 @@ void itoa(int number,char* str)
 			if(num<10)
 			{
 				str[i]='0'+num;
-				str[++i]='/0';
+				str[++i]='\0';
 				break;
 			}
 			else
@@ -55,7 +55,7 @@ void itoa(int number,char* str)
 			if(num<10)
 			{
 				str[i]= '0' + num;
-				str[++i]='/0';
+				str[++i]='\0';
 				break;
 			}
 			else

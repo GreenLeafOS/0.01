@@ -71,7 +71,7 @@ ListNode* list_search(ListHead *head,int index)
 	if(head == NULL) return NULL;
 
 	/* ±éÀúÁ´±í */
-	for(node=head;index >= 0;index--)
+	for(node=(ListNode*)head;index >= 0;index--)
 	{
 		node = node->next;
 

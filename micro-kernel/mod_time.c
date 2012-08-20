@@ -5,22 +5,23 @@
  *      Author: greenleaf
  */
 
-#define SetTimeInfo(value,len)	\
-	dbcd_to_str(value,(char*)&date_info[date_pos]);	\
-	date_pos += len
-
-/* PC输入频率 */
-#define TIMER_FREQ     1193182L
-/* 输出频率 */
-#define HZ             100	// 10ms级
 
 #include "include/module.h"
 #include "include/sysapi.h"
 
 
 
+/* mod_time macro */
+#define SetTimeInfo(value,len)							/* 显示字符串 */		\
+	dbcd_to_str(value,(char*)&date_info[date_pos]);							\
+	date_pos += len
+#define TIMER_FREQ     1193182L		/* PC输入频率 */
+#define HZ             100			/* 输出频率10ms级 */
 
-char day_of_week_table[7][12] = {
+
+/* mod_time data */
+char day_of_week_table[8][12] = {	/* 星期字符串常量 */
+		"",
 		"  Sunday    ",
 		"  Monday    ",
 		"  Tuesday   ",
@@ -28,8 +29,16 @@ char day_of_week_table[7][12] = {
 		"  Thursday  ",
 		"  Friday    ",
 		"  Saturday  "};
+id_t mod_time_id;					/* 主线程id */
+Time mod_time_sysclock;				/* 时钟信息 */
 
 
+/*
+ * mod_time_show
+ * 参数：无
+ * 功能：显示时间
+ * 返回值：无
+ */
 void mod_time_show()
 {
 	char date_info[50] = "Date: ";
@@ -57,18 +66,41 @@ void mod_time_show()
 }
 
 
+
+
+
+/*
+ * mod_time_read_cmos
+ * 参数：无
+ * 功能：读取cmos的时钟信息,并更新时钟信息
+ * 返回值：无
+ */
 void mod_time_read_cmos()
 {
 	for(int i=0;i<10;i++)
 	{
 		outb(0x70,i);
 		*(((u8*)&cmos_info) + i) = inb(0x71);
-
 	}
+	mod_time_sysclock.year = dbcd_to_int(cmos_info.DateCentury) * 100 + dbcd_to_int(cmos_info.Year);
+	mod_time_sysclock.month = dbcd_to_int(cmos_info.Month);
+	mod_time_sysclock.day_of_month = dbcd_to_int(cmos_info.DayOfMonth);
+	mod_time_sysclock.day_of_week = dbcd_to_int(cmos_info.DayOfWeek);
+	mod_time_sysclock.hours = dbcd_to_int(cmos_info.Hours);
+	mod_time_sysclock.minutes = dbcd_to_int(cmos_info.Minutes);
+	mod_time_sysclock.seconds = dbcd_to_int(cmos_info.Seconds);
+	return;
 }
 
 
 
+
+/*
+ * mod_time_do
+ * 参数：无
+ * 功能：处理消息
+ * 返回值：无
+ */
 void mod_time_do(MsgHead msg)
 {
 	if(msg.vector == MSG_INTR_CLOCK)
@@ -80,7 +112,6 @@ void mod_time_do(MsgHead msg)
 }
 
 
-id_t mod_time_id;
 void mod_time_main()
 {
 	/* 注册时钟中断 */

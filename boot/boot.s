@@ -5,6 +5,8 @@
 .global _start
 .global read_loader
 .code16
+
+boot_drive = 0x500
 /************************************************************************/
 /*                          Ö÷º¯Êý
 /*                          start
@@ -98,7 +100,6 @@ read_loader:
 /************************************************************************/
 boot_msg:
 	.ascii	"Booting..."
-boot_drive:
 	.byte	0
 free_space:
 	.org	0x200-0x2

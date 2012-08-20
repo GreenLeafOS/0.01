@@ -10,8 +10,10 @@ handle_ret_addr     0x4               bin/micro-kernel.o
 zone                0x90              bin/micro-kernel.o
 thread_realtime     0x4               bin/micro-kernel.o
 thread_table        0x80              bin/micro-kernel.o
+mod_time_sysclock   0x8               bin/micro-kernel.o
 tss                 0x6c              bin/arch.o
 thread_queue_ready  0x8               bin/micro-kernel.o
+mod_public_msg_id   0x2               bin/micro-kernel.o
 thread_resched_lock
                     0x4               bin/micro-kernel.o
 thread_queue_sleep  0x8               bin/micro-kernel.o
@@ -109,7 +111,7 @@ LOAD bin/lib.o
  *(.iplt)
  .iplt          0x0000000000000000        0x0 bin/arch.o
 
-.text           0x0000000000100000     0x2e18
+.text           0x0000000000100000     0x2f10
  *(.text.unlikely .text.*_unlikely)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
@@ -146,7 +148,7 @@ LOAD bin/lib.o
                 0x00000000001006c2                init_8259A
                 0x0000000000100794                print_pos
  *fill*         0x00000000001007cc        0x4 90909090
- .text          0x00000000001007d0     0x20c5 bin/micro-kernel.o
+ .text          0x00000000001007d0     0x2194 bin/micro-kernel.o
                 0x00000000001007d0                save
                 0x000000000010081f                restart
                 0x0000000000100850                hwint00
@@ -206,47 +208,47 @@ LOAD bin/lib.o
                 0x0000000000101d36                kill
                 0x0000000000101db6                lock
                 0x0000000000101dd2                unlock
-                0x0000000000101df0                public_msg_do
-                0x0000000000101f30                public_msg_main
-                0x000000000010201c                buddy_init
-                0x00000000001021d9                page_search
-                0x0000000000102220                page_alloc
-                0x0000000000102326                page_free
-                0x000000000010248c                page_is_buddy
-                0x00000000001024c7                alloc
-                0x0000000000102514                free
-                0x000000000010258c                mod_time_show
-                0x0000000000102777                mod_time_read_cmos
-                0x00000000001027c4                mod_time_do
-                0x00000000001027e0                mod_time_main
- *fill*         0x0000000000102895        0x3 90909090
- .text          0x0000000000102898      0x580 bin/lib.o
-                0x0000000000102898                memset
-                0x00000000001028b0                memcpy
-                0x00000000001028e5                strcpy
-                0x000000000010291e                strcat
-                0x0000000000102968                list_init
-                0x0000000000102984                list_add
-                0x00000000001029d3                list_addtail
-                0x0000000000102a1f                list_search
-                0x0000000000102a67                list_insert
-                0x0000000000102ad4                list_unlink
-                0x0000000000102b0d                list_delete
-                0x0000000000102b47                list_empty
-                0x0000000000102bbc                itoa
-                0x0000000000102de4                dbcd_to_str
+                0x0000000000101e94                buddy_init
+                0x0000000000102051                page_search
+                0x0000000000102098                page_alloc
+                0x000000000010219e                page_free
+                0x0000000000102304                page_is_buddy
+                0x000000000010233f                alloc
+                0x000000000010238c                free
+                0x0000000000102404                mod_time_show
+                0x00000000001025ef                mod_time_read_cmos
+                0x0000000000102709                mod_time_do
+                0x0000000000102725                mod_time_main
+                0x00000000001027dc                public_msg_do
+                0x000000000010291c                public_msg_main
+ .text          0x0000000000102964      0x5ac bin/lib.o
+                0x0000000000102964                memset
+                0x000000000010297c                memcpy
+                0x00000000001029b1                strcpy
+                0x00000000001029ea                strcat
+                0x0000000000102a34                list_init
+                0x0000000000102a50                list_add
+                0x0000000000102a9f                list_addtail
+                0x0000000000102aeb                list_search
+                0x0000000000102b33                list_insert
+                0x0000000000102ba0                list_unlink
+                0x0000000000102bd9                list_delete
+                0x0000000000102c13                list_empty
+                0x0000000000102c88                itoa
+                0x0000000000102eb0                dbcd_to_str
+                0x0000000000102ee4                dbcd_to_int
  *(.gnu.warning)
 
 .fini
  *(.fini)
-                0x0000000000102e18                PROVIDE (__etext, .)
-                0x0000000000102e18                PROVIDE (_etext, .)
-                0x0000000000102e18                PROVIDE (etext, .)
+                0x0000000000102f10                PROVIDE (__etext, .)
+                0x0000000000102f10                PROVIDE (_etext, .)
+                0x0000000000102f10                PROVIDE (etext, .)
 
-.rodata         0x0000000000102e20      0x128
+.rodata         0x0000000000102f20      0x128
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x0000000000102e20      0x128 bin/micro-kernel.o
-                0x0000000000102e60                msg_priority_table
+ .rodata        0x0000000000102f20      0x128 bin/micro-kernel.o
+                0x0000000000102f60                msg_priority_table
 
 .rodata1
  *(.rodata1)
@@ -254,21 +256,21 @@ LOAD bin/lib.o
 .eh_frame_hdr
  *(.eh_frame_hdr)
 
-.eh_frame       0x0000000000102f48      0xba8
+.eh_frame       0x0000000000103048      0xbcc
  *(.eh_frame)
- .eh_frame      0x0000000000102f48      0x3ac bin/arch.o
+ .eh_frame      0x0000000000103048      0x3ac bin/arch.o
                                         0x454 (size before relaxing)
- .eh_frame      0x00000000001032f4      0x650 bin/micro-kernel.o
-                                        0x710 (size before relaxing)
- .eh_frame      0x0000000000103944      0x1ac bin/lib.o
-                                        0x20c (size before relaxing)
+ .eh_frame      0x00000000001033f4      0x654 bin/micro-kernel.o
+                                        0x714 (size before relaxing)
+ .eh_frame      0x0000000000103a48      0x1cc bin/lib.o
+                                        0x22c (size before relaxing)
 
 .gcc_except_table
  *(.gcc_except_table .gcc_except_table.*)
 
 .exception_ranges
  *(.exception_ranges .exception_ranges*)
-                0x0000000000103af0                . = (ALIGN (0x1000) - ((0x1000 - .) & 0xfff))
+                0x0000000000103c14                . = (ALIGN (0x1000) - ((0x1000 - .) & 0xfff))
                 0x0000000000104000                . = DATA_SEGMENT_ALIGN (0x1000, 0x1000)
 
 .eh_frame
@@ -340,22 +342,22 @@ LOAD bin/lib.o
  *(.igot.plt)
  .igot.plt      0x0000000000000000        0x0 bin/arch.o
 
-.data           0x0000000000104000       0xf4
+.data           0x0000000000104000      0x100
  *(.data .data.* .gnu.linkonce.d.*)
  .data          0x0000000000104000        0x0 bin/arch.o
- .data          0x0000000000104000       0xf4 bin/micro-kernel.o
+ .data          0x0000000000104000      0x100 bin/micro-kernel.o
                 0x0000000000104000                msg_ok
                 0x0000000000104010                msg_max
                 0x0000000000104020                msg_reg
                 0x0000000000104040                thread_default_reg
                 0x00000000001040a0                day_of_week_table
- .data          0x00000000001040f4        0x0 bin/lib.o
+ .data          0x0000000000104100        0x0 bin/lib.o
 
 .data1
  *(.data1)
-                0x00000000001040f4                _edata = .
-                0x00000000001040f4                PROVIDE (edata, .)
-                0x00000000001040f4                __bss_start = .
+                0x0000000000104100                _edata = .
+                0x0000000000104100                PROVIDE (edata, .)
+                0x0000000000104100                __bss_start = .
 
 .bss            0x0000000000104100     0x2da0
  *(.dynbss)
@@ -363,12 +365,11 @@ LOAD bin/lib.o
  .bss           0x0000000000104100        0x4 bin/arch.o
                 0x0000000000104100                disp_pos
  *fill*         0x0000000000104104       0x1c 00
- .bss           0x0000000000104120     0x1204 bin/micro-kernel.o
-                0x0000000000104120                msg_reg_table
-                0x0000000000105320                order
- .bss           0x0000000000105324        0x0 bin/lib.o
+ .bss           0x0000000000104120     0x1220 bin/micro-kernel.o
+                0x0000000000104120                order
+                0x0000000000104140                msg_reg_table
+ .bss           0x0000000000105340        0x0 bin/lib.o
  *(COMMON)
- *fill*         0x0000000000105324       0x1c 00
  COMMON         0x0000000000105340      0x9e0 bin/arch.o
                 0x0000000000105340                gdt_table
                 0x0000000000105440                idt_ptr
@@ -385,13 +386,15 @@ LOAD bin/lib.o
                 0x0000000000105d40                zone
                 0x0000000000105dd0                thread_realtime
                 0x0000000000105de0                thread_table
-                0x0000000000105e60                thread_queue_ready
-                0x0000000000105e68                thread_resched_lock
-                0x0000000000105e6c                thread_queue_sleep
-                0x0000000000105e74                handle_err_code
-                0x0000000000105e78                kernel_stack_top
-                0x0000000000105e7c                thread_run
-                0x0000000000105e80                thread_run_stack_top
+                0x0000000000105e60                mod_time_sysclock
+                0x0000000000105e68                thread_queue_ready
+                0x0000000000105e70                mod_public_msg_id
+                0x0000000000105e74                thread_resched_lock
+                0x0000000000105e78                thread_queue_sleep
+                0x0000000000105e80                handle_err_code
+                0x0000000000105e84                kernel_stack_top
+                0x0000000000105e88                thread_run
+                0x0000000000105e8c                thread_run_stack_top
                 0x0000000000105ea0                page_dir
                 0x0000000000106ea0                . = ALIGN ((. != 0x0)?0x4:0x1)
                 0x0000000000106ea0                . = ALIGN (0x4)
