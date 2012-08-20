@@ -6,7 +6,7 @@
  */
 
 /*  包含了很多宏，代码中多次使用 */
-.include "handle.inc"
+.include "irq.inc"
 
 
 .section	.text

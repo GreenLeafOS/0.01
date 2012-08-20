@@ -7,7 +7,7 @@
 
 #include "include/main.h"
 #include "include/sysapi.h"
-#include "include/handle.h"
+#include "include/irq.h"
 #include "include/module.h"
 
 /* main data */

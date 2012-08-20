@@ -54,7 +54,7 @@ void buddy_init()
 		PhyPage* block = base + (j * BIGGEST_SIZE);
 		block->private = BIGGEST_SIZE;
 		zone.free_pages += BIGGEST_SIZE;
-		list_add(&zone.free_area[10].free_list,&block->node);
+		list_addtail(&zone.free_area[10].free_list,&block->node);
 	}
 	while((1 << order) < biggest_count) order++;
 

@@ -9,15 +9,32 @@
 #include "include/module.h"
 #include "include/sysapi.h"
 
+/* handle_info */
+struct handle_info
+{
+	u32 room[2];
+};
 
-/* mod_handle data */
-id_t mod_time_id;
 
-
+/* handle 16byte 一个页256项 */
 struct handle
 {
-
+	u32 				id;		// id（为0表示未使用）
+	void*				p;		// 资源指针
+	struct handle_info	info;	// 句柄信息
 };
+
+
+
+/* mod_handle config */
+#define HANDLE_TABLE_BLOCK_SIZE		8			// 2的8次方，256页
+#define HANDLE_TABLE_BLCOK_MAX		256
+
+
+/* mod_handle data */
+id_t 				mod_handle_id;
+struct handle* 		mod_handle_table[HANDLE_TABLE_BLCOK_MAX];
+
 
 
 /*

@@ -1,5 +1,5 @@
 /*
- * handle.inc
+ * irq.inc
  *
  *  Created on: 2012-8-16
  *      Author: greenleaf
@@ -21,9 +21,9 @@
 .extern		save
 .extern		restart
 
-/* handle.c */
-.extern		handler_exception
-.extern		handle_intr
+/* irq.c */
+.extern		exception_handle
+.extern		intr_handle
 .extern 	handle_ret_addr
 .extern		handle_err_code
 
@@ -148,7 +148,7 @@
 
 	/* 调用中断处理函数 */
 	pushl	$\irq_num				/* irq */
-	call	handle_intr				/* 如果没有重入则调用调度函数。中断重入时不允许抢占 */
+	call	intr_handle				/* 如果没有重入则调用调度函数。中断重入时不允许抢占 */
 	popl	%ecx					/* 调用者清理堆栈 */
 
 	/* 恢复响应当前中断 */
@@ -183,7 +183,7 @@
 
 	sti								/* 开中断 */
 	pushl	$\irq_num				/* irq */
-	call	handle_intr
+	call	intr_handle
 	popl	%ecx					/* 调用者清理堆栈 */
 	cli								/* 关中断 */
 
@@ -207,7 +207,7 @@
 	call	save
 	pushl	(handle_err_code)
 	pushl	$\vec_num
-	call	handler_exception
+	call	exception_handle
 	addl	$8,%esp					/* 清理堆栈 */
 	ret								/* 返回restart */
 .endm

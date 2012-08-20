@@ -6,7 +6,7 @@
  */
 
 #include "include/sysapi.h"
-#include "include/handle.h"
+#include "include/irq.h"
 #include "include/main.h"
 
 #include "arch/include/desc.h"
