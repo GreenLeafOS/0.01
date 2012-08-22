@@ -22,9 +22,12 @@ typedef struct page_entry
 	u32 d			: 1;			/* D位 Bit6*/
 	u32	ps			: 1;			/* 页大小 Bit7*/
 	u32 g			: 1;			/* 指示全局页 Bit8*/
-	u32 avl			: 3;			/* 系统使用保留位 Bit9~Bit11*/
+	u32 avl			: 3;			/* 系统使用保留位 Bit9~Bit11 */
 	u32 addr		: 20;			/* 物理地址高20位 Bit12~Bit31*/
 }PageEntry;
+
+
+#define PDE_ALLOCATED		1		/* 已经分配 */
 
 /*页表页目录结构*/
 typedef struct page_table

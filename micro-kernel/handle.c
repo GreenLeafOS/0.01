@@ -9,40 +9,46 @@
 #include "include/handle.h"
 
 /* handle data */
-Handle*	handle_table[HANDLE_TABLE_BLCOK_MAX];
-
+struct handle_bmp handle_table[HANDLE_TABLE_BLCOK_MAX];
 
 
 
 /*
  * SysApi new
- * 参数：句柄信息（不用填写id）
+ * 参数：无
  * 功能：分配一个对象句柄
- * 返回值：句柄指针
+ * 返回值：句柄id
  */
-Handle*	new(Handle handle)
+u32 new()
 {
 	/* 外层循环，查找表 */
 	for(int i=0;i<HANDLE_TABLE_BLCOK_MAX;i++)
 	{
-		Handle *free = handle_table[i] ;
-		if (free == NULL)
+		struct handle_bmp free = handle_table[i] ;
+		if (free.bmp_size == 0)
 		{
 			/* 为空表分配内存 */
-			handle_table[i] = (Handle*)alloc(HANDLE_TABLE_BLOCK_SIZE);
+			handle_table[i].bmp_base = (u32*)alloc(HANDLE_TABLE_BLOCK_SIZE);
+			bmp_set(handle_table[i].bmp_base,0);	// 保留第一位用于区别无效句柄
+
+			handle_table[i].bmp_size = HANDLE_TABLE_BLOCK_ITEMS;
+			handle_table[i].free_item = HANDLE_TABLE_BLOCK_ITEMS;
 		}
-		/* 内层循环，查找空闲句柄 */
-		for(int j=0;j< HANDLE_TABLE_ITEM_COUNT;j++)
+		if (free.free_item == 0) continue;
+
+		/* 查找空闲句柄 */
+		int id = bmp_search(free.bmp_base,free.bmp_size);
+		if (id == -1)
 		{
-			if (free++->id == 0)
-			{
-				handle.id = (i*HANDLE_TABLE_ITEM_COUNT)+j;
-				*(handle_table[i] + j) = handle;
-				return (handle_table[i] + j);
-			}
+			return 0;
+		}
+		else
+		{
+			free.free_item--;
+			return (u32)id;
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 
@@ -55,38 +61,9 @@ Handle*	new(Handle handle)
  * 功能：释放句柄
  * 返回值：无
  */
-void delete(Handle *handle)
+void delete(u32 handle)
 {
-	(handle_table[0] + handle->id)->id = NULL;
+	bmp_clear(handle_table[handle/HANDLE_TABLE_BLOCK_ITEMS].bmp_base,
+			handle%HANDLE_TABLE_BLOCK_ITEMS);
 	return;
-}
-
-
-
-
-
-/*
- * SysApi set
- * 参数：无
- * 功能：写入句柄
- * 返回值：无
- */
-void set(Handle handle)
-{
-	*(handle_table[0] + handle.id) = handle;
-	return;
-}
-
-
-
-
-/*
- * SysApi get
- * 参数：无
- * 功能：获取句柄
- * 返回值：句柄指针
- */
-Handle get(u32 id)
-{
-	return *(handle_table[0] + id);
 }

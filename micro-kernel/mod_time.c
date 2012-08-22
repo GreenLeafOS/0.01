@@ -20,15 +20,15 @@
 
 
 /* mod_time data */
-char day_of_week_table[8][12] = {	/* 星期字符串常量 */
+char day_of_week_table[8][14] = {	/* 星期字符串常量 */
 		"",
-		"  Sunday    ",
-		"  Monday    ",
-		"  Tuesday   ",
-		"  Wednesday ",
-		"  Thursday  ",
-		"  Friday    ",
-		"  Saturday  "};
+		"  Sunday     ",
+		"  Monday     ",
+		"  Tuesday    ",
+		"  Wednesday  ",
+		"  Thursday   ",
+		"  Friday     ",
+		"  Saturday   "};
 id_t mod_time_id;					/* 主线程id */
 Time mod_time_sysclock;				/* 时钟信息 */
 
@@ -50,8 +50,8 @@ void mod_time_show()
 	SetTimeInfo(cmos_info.Month,2);			// 月
 	date_info[date_pos++] = '-';
 	SetTimeInfo(cmos_info.DayOfMonth,2);	// 日
-	memcpy((void*)&date_info[date_pos],(void*)&day_of_week_table[cmos_info.DayOfWeek][0],11);	// 星期
-	date_pos += 11;
+	memcpy((void*)&date_info[date_pos],(void*)&day_of_week_table[cmos_info.DayOfWeek][0],13);	// 星期
+	date_pos += 13;
 
 	SetTimeInfo(cmos_info.Hours,2);			// 时
 	date_info[date_pos++] = ':';
@@ -62,7 +62,7 @@ void mod_time_show()
 	SetTimeInfo(cmos_info.Seconds,2);		// 秒
 	date_info[date_pos++] = '\n';
 
-	print_pos((char*)&date_info,24*160 + 90);
+	print_pos((char*)&date_info,24*160 + 86);
 }
 
 
@@ -112,6 +112,12 @@ void mod_time_do(MsgHead msg)
 }
 
 
+
+
+/*
+ * mod_time_main
+ * 主循环
+ */
 void mod_time_main()
 {
 	/* 注册时钟中断 */

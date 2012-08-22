@@ -11,6 +11,7 @@
 
 /* message data */
 MsgHead msg_ok = {MSG_RET_OK,MSG_PRIORITY_RET};
+MsgHead msg_fail = {MSG_RET_FAIL,MSG_PRIORITY_RET};
 MsgHead msg_max = {MSG_RET_MAX,MSG_PRIORITY_RET};
 MsgHead msg_reg = {MSG_THREAD_REGPUB,MSG_PRIORITY_REALTIME};
 

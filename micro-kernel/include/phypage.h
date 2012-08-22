@@ -14,15 +14,14 @@
 /* PhyPage */
 typedef struct phy_page
 {
-	ListNode node;
+	ListNode node;		// 节点,空闲时用于链接空闲链表，使用时用于链接线性链表
 	u32 flags;
-	u32 private;			/* 计数器为0，则页处于块中间，块起始页的计数器保存块大小 */
+	u32	private;
 }PhyPage;
 
 
 /* PhyPage.flags bit */
 #define	PG_BUSY			0	/* 块正在使用,起始页有效 */
-
 
 
 /* free_area */
@@ -64,6 +63,18 @@ Bool	page_is_buddy(PhyPage *page, int order);
 
 #define Index_To_Addr(index)	(index * PAGE_SIZE)
 #define Index_To_Page(index)	(PhyPage*)(zone.page_base + index)
+
+
+#define BIGGEST_SIZE (1<<10)
+#define PG_DESC_SIZE(mem_size) B_TO_PAGE(B_TO_PAGE(mem_size)*sizeof(PhyPage))
+
+
+#define OrderToPages(order,pages)	\
+	while((1 << order) >= pages) pages*=2
+
+#define PagesToOrder(pages,order)	\
+	while((1 << order) <= pages) order++
+
 
 
 #endif /* PHYPAGE_H_ */

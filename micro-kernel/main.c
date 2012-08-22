@@ -19,7 +19,7 @@ int kernel_reenter;
  */
 void kernel_main()
 {
-	char *str = "GreenLeafOS version 0.01.\n";
+	char *str = "\n\nGreenLeafOS version 0.01.\n";
 	print(str);
 
 	kernel_stack_top = (u32*)&tss.esp0;
@@ -63,4 +63,5 @@ void main_thread_create()
 	/* 建立线程 */
 	CreateThread(mod_public_msg,	thread,		thread_default_reg);
 	CreateThread(mod_time,			thread,		thread_default_reg);
+	CreateThread(mod_addr_room,		thread,		thread_default_reg);
 }

@@ -13,10 +13,8 @@
 
 /* phypage data */
 struct zone_t zone;
-int order = 0;
 
-#define BIGGEST_SIZE (1<<10)
-#define PG_DESC_SIZE(mem_size) B_TO_PAGE(B_TO_PAGE(mem_size)*sizeof(PhyPage))
+
 
 /*
  * Phypage init
@@ -40,6 +38,7 @@ void buddy_init()
 	zone.page_base = base;							/* 存放页描述符的起始地址 */
 
 	int biggest_count = (zone.page_count/BIGGEST_SIZE)+1;	/* 最大块的个数 */
+	int page_count = (zone.page_count*sizeof(PhyPage))/PAGE_SIZE + 1;	/* 页描述符占用空间 */
 
 	/* 初始化小块 */
 	for(int i=0;i<11;i++)
@@ -56,12 +55,10 @@ void buddy_init()
 		zone.free_pages += BIGGEST_SIZE;
 		list_addtail(&zone.free_area[10].free_list,&block->node);
 	}
-	while((1 << order) < biggest_count) order++;
+	int order = 0;
+	PagesToOrder(page_count,order);
 
 	page_alloc(order);
-
-	char* str = "\n\nBuddy System init.\n";
-	print(str);
 
 	return;
 }
@@ -211,7 +208,7 @@ Bool page_is_buddy(PhyPage *page, int order)
 void* alloc(u32 size)
 {
 	int order = 0;
-	while((1 << order) < size) order++;
+	while((1 << order) <= size) order++;
 	return (void*)Page_To_Addr(page_alloc(order));
 }
 

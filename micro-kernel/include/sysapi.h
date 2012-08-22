@@ -32,10 +32,8 @@ MsgHead			recv();							/* 接收消息 */
 void*			alloc(u32 size);				/* 分配物理页框 */
 void			free(void* addr);				/* 释放物理页框 */
 /* handle.c */
-Handle*			new(Handle handle);				/* 分配对象句柄 */
-void			delete(Handle *handle);			/* 释放对象句柄 */
-void			set(Handle handle);				/* 写入句柄 */
-Handle			get(u32 id);					/* 获取句柄 */
+u32				new();							/* 分配对象句柄 */
+void			delete(u32 handle);				/* 释放对象句柄 */
 
 
 #endif /* SYSAPI_H_ */

@@ -10,28 +10,22 @@
 
 #include "lib.h"
 
-/* handle_info */
-struct handle_info
-{
-	u32 room[2];
-};
-
-
-/* handle */
-typedef struct handle
-{
-	u32 				id;		// id（为0表示未使用）
-	void*				p;		// 资源指针
-	struct handle_info	info;	// 句柄信息
-}Handle;
-
-
 /* handle config */
-#define HANDLE_TABLE_BLOCK_SIZE		8			// 2的8次方，256页,一个页256项
+#define HANDLE_TABLE_BLOCK_SIZE		1			// 2的1次方，2个页,映射65536个表项
+#define HANDLE_TABLE_BLOCK_PAGES	2			// 2个页
+#define HANDLE_TABLE_BLOCK_ITEMS	(2*PAGE_SIZE*32)	// 一个块的位图项数
 #define HANDLE_TABLE_BLCOK_MAX		256
 
-/* handle macro */
-#define HANDLE_TABLE_ITEM_COUNT		((HANDLE_TABLE_BLCOK_MAX*PAGE_SIZE)/sizeof(Handle))
+
+/* handle_bmp */
+struct handle_bmp
+{
+	u32* bmp_base;	// 位图起始地址
+	u32 free_item;	// 剩余表项数
+	u32 bmp_size;	// 位图大小，位单位
+};
+
+typedef u32 Handle;
 
 
 #endif /* HANDLE_H_ */

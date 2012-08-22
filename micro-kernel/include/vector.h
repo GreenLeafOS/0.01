@@ -58,6 +58,32 @@
 
 #define		MSG_RET_MAX					MSG_THREAD + 2					// 表项已满
 #define		MSG_RET_OK					MSG_THREAD + 3					// 执行成功
+#define		MSG_RET_FAIL				MSG_THREAD + 4					// 失败
+
+#define		MSG_REQUEST_CREATE			MSG_THREAD + 5					// 创建资源
+
+#define		MSG_ADDRROOM_ADD			MSG_THREAD + 6					// 添加线性区对象
+#define		MSG_ADDRROOM_DEL			MSG_THREAD + 7					// 删除线性区对象
+#define		MSG_ADDRROOM_SWITCH			MSG_THREAD + 8					// 切换线性区
+
+#define		MSG_ADDRROOM_CREATE_ROOM	0
+#define		MSG_ADDRROOM_CREATE_BLOCK	1
+
+struct		_body_create
+{
+	u32		type;
+	Handle*	ret;
+};
+
+struct		_body_addr_room_add_del
+{
+	Handle	room,block;
+};
+
+struct		_body_addr_room_switch
+{
+	Handle	room;
+};
 
 /* 优先级 */
 #define		MSG_PRIORITY(msg,value) value,

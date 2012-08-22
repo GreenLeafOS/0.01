@@ -24,6 +24,7 @@
 		type datatype name[max];					\
 		type u32 name##_data[max/32]
 
+#define BmpArray(name,max)	u32 name[max/32];
 
 static inline void bmp_set(void *bmp,u32 bit)
 {

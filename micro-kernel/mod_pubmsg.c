@@ -73,7 +73,7 @@ void mod_public_msg_do(MsgHead msg)
  */
 void mod_public_msg_main()
 {
-	char *str = "public_msg_main.\n";
+	char *str = "public message.\n";
 	print(str);
 	while(1)
 	{
