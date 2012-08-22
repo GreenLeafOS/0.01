@@ -77,7 +77,7 @@ Bool mod_addr_room_add(Handle addr_room,Handle linear_block)
 
 
 	/* 只要获得的指针不为NULL，搜索新块位置是否无效 */
-	while(other = (LinearBlock*)list_search(&room.head,i))
+	while(other = (LinearBlock*)list_search(&room->head,i))
 	{
 		/* 已有块的起始和结束 */
 		int other_start = other->start;
@@ -115,7 +115,7 @@ void mod_addr_room_del(Handle addr_room,Handle linear_block)
 	// 获取addr_room的实例
 	LinearRoom *room;
 
-	list_unlink(&room->head,&block->block->node);
+	list_unlink(&block->block->node);
 }
 
 
@@ -134,14 +134,15 @@ void mod_addr_room_switch(Handle addr_room)
 
 
 	/* 只要获得的指针不为NULL，循环搜索块 */
-	while(block = (LinearBlock*)list_search(&room.head,i))
+	int i=0;
+	while(block = (LinearBlock*)list_search(&room->head,i))
 	{
 		/* 如果块没有映射过 */
 		if (!(bmp_test(&block->flags,LB_USED)))
 		{
-			for(int i=block->start;i<block->start + block->block->private;i++)
+			for(int j=block->start;j<block->start + block->block->private;j++)
 			{
-				u32 page_index = (block->start + i) & 0x3FF;	/* 取得页号，高位屏蔽 */
+				u32 page_index = (block->start + j) & 0x3FF;	/* 取得页号，高位屏蔽 */
 				/* 页目录项下标等于起始页号除以一个项可以映射的页数 */
 				PageEntry *pde = (PageEntry*)&room->table->items[page_index/1024];
 				PageTable *tbl;
@@ -153,10 +154,10 @@ void mod_addr_room_switch(Handle addr_room)
 					/* 就马上分配一个页 */
 					pde->addr = (u32)alloc(0);
 				}
-				tbl = (PageTable*)(u32)pde.addr;
+				tbl = (PageTable*)((u32)pde->addr);
 
 				/* 页表项的下标等于起始页号除以一个项可以映射的页数的余数 */
-				pte = (PageEntry*)tbl->items[page_index%1024];
+				pte = (PageEntry*)&tbl->items[page_index%1024];
 
 				/* 映射 */
 				pte->addr = (u32)page_index;

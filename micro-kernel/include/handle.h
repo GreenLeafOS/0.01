@@ -25,7 +25,5 @@ struct handle_bmp
 	u32 bmp_size;	// 位图大小，位单位
 };
 
-typedef u32 Handle;
-
 
 #endif /* HANDLE_H_ */

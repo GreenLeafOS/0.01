@@ -23,5 +23,6 @@
 #include <arch/include/table.h>
 #include <arch/include/print.h>
 #include <arch/include/cmos.h>
+#include <arch/include/page.h>
 
 #endif /* LIB_H_ */

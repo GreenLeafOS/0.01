@@ -15,7 +15,7 @@ typedef void* point;
 typedef void (*ThreadFun)(point params);
 typedef void (*FunAddr)();
 typedef int Bool;
-
+typedef u32 Handle;
 
 typedef unsigned long Result;
 
