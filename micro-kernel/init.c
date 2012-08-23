@@ -22,7 +22,7 @@ PageTable g_page_dir;
  */
 void page_init()
 {
-	PageTable* page_dir = 0x80000;//&g_page_dir;
+	PageTable* page_dir = (PageTable*)0x80000;// &g_page_dir;
 
 	/* าณฑํด๓ะก */
 	int page_table_size = B_TO_NEED_TABLE(mem_size);

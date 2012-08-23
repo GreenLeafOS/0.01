@@ -149,6 +149,7 @@ void thread_schedule()
 	/* 检查是否允许抢占 */
 	if (thread_realtime && thread_resched_lock.value)
 	{
+		thread_run->thread_info.state = THREAD_STATE_READY;
 		SetRunThread(thread_realtime);
 		thread_realtime = NULL;
 		lock();
@@ -177,6 +178,7 @@ void thread_schedule()
 	{
 		thread = (KernelThread*)thread->thread_info.node.next;
 		if (thread == (KernelThread*)&thread_queue_ready) break;
+
 		if (thread->thread_info.ticks)
 		{
 			if (thread->thread_info.id != 0 && thread->thread_info.state == THREAD_STATE_READY)
@@ -192,6 +194,7 @@ void thread_schedule()
 			thread->thread_info.ticks = (5-thread->thread_info.priority)* 2;
 		}
 	}
+	__asm(".global d\nd:\n");
 	/* 没有搜索到，执行空闲系统线程 */
 	SetRunThread(thread_table[0]);
 }
@@ -294,7 +297,7 @@ void wake(KernelThread* thread)
 		list_unlink(&thread->thread_info.node);
 
 		/* 加入就绪队列 */
-		list_add(&thread_queue_ready,&thread->thread_info.node);
+		list_addtail(&thread_queue_ready,&thread->thread_info.node);
 	KernelUnlock();
 }
 
