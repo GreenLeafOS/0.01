@@ -31,13 +31,13 @@ LinearBlock		mod_addr_block_base[1024];
 Handle mod_addr_room_create()
 {
 	Handle ret = new();
-	LinearRoom room;
-
-	list_init(&room.head);
-	room.free_count = UserLinearSpacePages;
-	room.table = (PageTable*)alloc(0);
-
+	LinearRoom room,*item;
 	hash_set(&mod_addr_room_hash,ret,&room);
+	item = hash_getaddr(&mod_addr_room_hash,ret);
+
+	list_init(&item->head);
+	item->free_count = UserLinearSpacePages;
+	item->table = (PageTable*)alloc(0);
 
 	return ret;
 }
@@ -49,11 +49,11 @@ Handle mod_addr_room_create()
  * mod_addr_room_alloc
  * 分配线性块
  */
-Handle mod_addr_room_alloc()
+Handle mod_addr_room_alloc(LinearBlock *block)
 {
 	Handle ret = new();
-	LinearBlock block;
-
+	LinearBlock new_block;
+	if(block != NULL) new_block = *block;
 	hash_set(&mod_addr_block_hash,ret,&block);
 
 	return ret;
@@ -68,7 +68,7 @@ Handle mod_addr_room_alloc()
  */
 Bool mod_addr_room_add(Handle addr_room,Handle linear_block)
 {
-	int i=0,pages=0;
+	int i=0,pages=1;
 
 	LinearBlock *other;
 
@@ -152,6 +152,7 @@ void mod_addr_room_switch(Handle addr_room)
 			for(int j=block->start;j<block->start + block->block->private;j++)
 			{
 				u32 page_index = (block->start + j) & 0x3FF;	/* 取得页号，高位屏蔽 */
+				__asm(".global end\nend:\n");
 				/* 页目录项下标等于起始页号除以一个项可以映射的页数 */
 				PageEntry *pde = (PageEntry*)&room->table->items[page_index/1024];
 				PageTable *tbl;
@@ -177,6 +178,7 @@ void mod_addr_room_switch(Handle addr_room)
 		i++;
 	}
 
+//	__asm(".global end\nend:\n");
 	page_directory_load((u32)&room->table);	/* 加载页表 */
 }
 
@@ -189,9 +191,6 @@ void mod_addr_room_switch(Handle addr_room)
  */
 void mod_addr_room_do(MsgHead msg)
 {
-	char *ch = "do\n";
-	print(ch);
-
 	switch(msg.vector)
 	{
 		/* 创建资源 */
@@ -207,7 +206,7 @@ void mod_addr_room_do(MsgHead msg)
 			/* 线性块 */
 			else
 			{
-				*body->ret = mod_addr_room_alloc();
+				*body->ret = mod_addr_room_alloc((LinearBlock*)body->init);
 				goto Success;
 			}
 		}

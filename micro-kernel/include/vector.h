@@ -73,6 +73,7 @@ struct		_body_create
 {
 	u32		type;
 	Handle*	ret;
+	void*	init;
 };
 
 struct		_body_addr_room_add_del

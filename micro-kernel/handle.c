@@ -45,6 +45,7 @@ u32 new()
 		else
 		{
 			free->free_item--;
+			bmp_set(free->bmp_base,id);
 			return (u32)id;
 		}
 	}

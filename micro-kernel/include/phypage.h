@@ -76,5 +76,6 @@ Bool	page_is_buddy(PhyPage *page, int order);
 	while((1 << order) < pages) order++
 
 
+#define PagesTo
 
 #endif /* PHYPAGE_H_ */

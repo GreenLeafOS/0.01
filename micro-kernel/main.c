@@ -64,11 +64,12 @@ void test_main()
 	char *node = "test.\n";
 	print(node);
 
-	Handle handle;
-	struct _body_create body =
+	Handle handle_room,handle_block;
+	struct _body_create body1 =
 	{
 			0,
-			&handle
+			&handle_room,
+			NULL
 	};
 	MsgHead msg =
 	{
@@ -76,26 +77,63 @@ void test_main()
 			MSG_PRIORITY_KERNEL,
 			test_id,
 			mod_addr_room_id,
-			&body,
-			sizeof(body),
+			&body1,
+			sizeof(body1),
 			0
 	};
 	post(msg);
 	recv();
 
-	char str[16];
-	char *info = "new linear address space.  handle:";
-	itoa(handle,(char*)&str);
+	char str1[3];
+	char str2[3];
+	char *info[2] = {"new linear address space.  handle:"
+					,"\nnew linear block.          handle:"};
 
-	print(info);
-	print(str);
+	itoa(handle_room,(char*)&str1);
+	print(info[0]);
+	print(str1);
 
-	while(1)
+
+	LinearBlock block;
+	block.start = 20;
+
+	block.block = (PhyPage*)Addr_To_Page(alloc(45));
+	block.block = page_alloc(4);
+	body1.ret = &handle_block;
+	body1.type = 1;
+	body1.init ;
+	post(msg);
+	recv();
+
+
+	itoa(handle_block,(char*)&str2);
+	print(info[1]);
+	print(str2);
+
+
+	msg.vector = MSG_ADDRROOM_ADD;
+	struct _body_addr_room_add_del body2 =
 	{
-		char* in = "o";
-		for(int i=0;i<10000000;i++);
-		print(in);
-	}
+		handle_room,handle_block
+	};
+	msg.body_point = &body2;
+	msg.body_size = sizeof(body2);
+	post(msg);
+	recv();
+
+
+	struct _body_addr_room_switch body3 = {handle_room};
+	msg.vector = MSG_ADDRROOM_SWITCH;
+	msg.body_point = &body3;
+	msg.body_size = sizeof(body3);
+
+	post(msg);
+	recv();
+	char *st = "ok\n";
+	print(st);
+
+
+	while(1);
 }
 
 

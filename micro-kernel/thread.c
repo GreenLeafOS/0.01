@@ -194,7 +194,6 @@ void thread_schedule()
 			thread->thread_info.ticks = (5-thread->thread_info.priority)* 2;
 		}
 	}
-	__asm(".global d\nd:\n");
 	/* 没有搜索到，执行空闲系统线程 */
 	SetRunThread(thread_table[0]);
 }

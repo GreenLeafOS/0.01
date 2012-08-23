@@ -18,3 +18,4 @@ SECTIONS
 	 	*(.symtab) *(.comment) *(.eh_frame) *(.iplt) *(.shstrtab)  *(.strtab) *(.shstrtab) *(.rel.dyn)
 	 }
 }
+x /32wx 0x107a00
