@@ -44,12 +44,59 @@ void kernel_main()
  */
 void kernel_main_thread()
 {
+	while(1)
+	{
+		char* in = "m";
+		for(int i=0;i<1000000;i++);
+		print(in);
+	}
 	while(1);
 }
 
 
 
+/*
+ * test
+ */
+int test_id;
+void test_main()
+{
+	char *node = "test.\n";
+	print(node);
 
+	Handle handle;
+	struct _body_create body =
+	{
+			0,
+			&handle
+	};
+	MsgHead msg =
+	{
+			MSG_REQUEST_CREATE,
+			MSG_PRIORITY_KERNEL,
+			test_id,
+			mod_addr_room_id,
+			&body,
+			sizeof(body),
+			0
+	};
+	post(msg);
+	recv();
+
+	char str[16];
+	char *info = "new linear address space.  handle:";
+	itoa(handle,(char*)&str);
+
+	print(info);
+	print(str);
+
+	while(1)
+	{
+		char* in = "o";
+		for(int i=0;i<10000000;i++);
+		print(in);
+	}
+}
 
 
 /*
@@ -64,4 +111,5 @@ void main_thread_create()
 	CreateThread(mod_public_msg,	thread,		thread_default_reg);
 	CreateThread(mod_time,			thread,		thread_default_reg);
 	CreateThread(mod_addr_room,		thread,		thread_default_reg);
+	CreateThread(test,				thread,		thread_default_reg);
 }

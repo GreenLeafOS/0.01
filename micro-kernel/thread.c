@@ -41,6 +41,7 @@ void thread_init()
 {
 	memset(&thread_table[0],0,sizeof(thread_table));
 	list_init(&thread_queue_sleep);
+	list_init(&thread_queue_ready);
 
 	/* 建立线程 */
 	KernelThread* thread = create();
@@ -48,16 +49,12 @@ void thread_init()
 	thread->thread_info.stack_top -= sizeof(thread_default_reg);
 	*(StackFrame*)thread->thread_info.stack_top = thread_default_reg;
 
-	thread->thread_info.ticks = 0;						// 时间片为0
+	thread->thread_info.ticks = 2;						// 时间片为0
+	thread->thread_info.priority = 4;					// 没有时间片
+	list_addtail(&thread_queue_ready,&thread->thread_info.node);
 	SetRunThread(thread_table[0]);						// 设置为运行线程
 
-	thread_queue_ready.next = &thread->thread_info.node;
-	thread_queue_ready.prev = &thread->thread_info.node;
-	thread_run->thread_info.node.next = &thread->thread_info.node;
-	thread_run->thread_info.node.prev = &thread->thread_info.node;
-
 	thread_realtime = NULL;
-
 	thread_resched_lock.value = True;
 }
 
@@ -163,28 +160,36 @@ void thread_schedule()
 	/* 检查运行线程是否需要切换 */
 	if (thread_run->thread_info.state == THREAD_STATE_RUNNING)
 	{
-		if (thread_run->thread_info.ticks--) return;
-		/* 时间片已完，重置 */
+		if(thread_run->thread_info.ticks--)
+		{
+			return;
+		}
 		else
 		{
-			thread_run->thread_info.ticks = (5-thread_run->thread_info.priority)* 2;
 			thread_run->thread_info.state = THREAD_STATE_READY;
 		}
 	}
 
+
 	/* 搜索可执行线程 */
-	KernelThread *thread = (KernelThread *)thread_queue_ready.next;
-	while(thread != NULL && thread != (KernelThread*)&thread_queue_ready)
+	KernelThread *thread = (KernelThread*)&thread_queue_ready;
+	while(thread != NULL)
 	{
 		thread = (KernelThread*)thread->thread_info.node.next;
-		if (thread->thread_info.ticks && thread->thread_info.id != 0 &&
-			thread->thread_info.state == THREAD_STATE_READY)
+		if (thread == (KernelThread*)&thread_queue_ready) break;
+		if (thread->thread_info.ticks)
 		{
-
-			/* 如果抢占了控制权的线程执行完毕,则重新允许抢占 */
-			if (!(thread_resched_lock.value)) unlock();
-			SetRunThread(thread);
-			return;
+			if (thread->thread_info.id != 0 && thread->thread_info.state == THREAD_STATE_READY)
+			{
+				/* 如果抢占了控制权的线程执行完毕,则重新允许抢占 */
+				if (!(thread_resched_lock.value)) unlock();
+				SetRunThread(thread);
+				return;
+			}
+		}
+		else
+		{
+			thread->thread_info.ticks = (5-thread->thread_info.priority)* 2;
 		}
 	}
 	/* 没有搜索到，执行空闲系统线程 */

@@ -22,29 +22,29 @@ struct handle_bmp handle_table[HANDLE_TABLE_BLCOK_MAX];
 u32 new()
 {
 	/* 外层循环，查找表 */
-	for(int i=0;i<HANDLE_TABLE_BLCOK_MAX;i++)
+	for(int i=0;i<HANDLE_TABLE_BLCOK_MAX;i++)		// -12
 	{
-		struct handle_bmp free = handle_table[i] ;
-		if (free.bmp_size == 0)
+		struct handle_bmp *free = &handle_table[i] ;	// -20
+		if (free->bmp_size == 0)
 		{
 			/* 为空表分配内存 */
-			handle_table[i].bmp_base = (u32*)alloc(HANDLE_TABLE_BLOCK_SIZE);
-			bmp_set(handle_table[i].bmp_base,0);	// 保留第一位用于区别无效句柄
+			free->bmp_base = (u32*)alloc(HANDLE_TABLE_BLOCK_SIZE);
+			bmp_set(free->bmp_base,0);	// 保留第一位用于区别无效句柄
 
-			handle_table[i].bmp_size = HANDLE_TABLE_BLOCK_ITEMS;
-			handle_table[i].free_item = HANDLE_TABLE_BLOCK_ITEMS;
+			free->bmp_size = HANDLE_TABLE_BLOCK_ITEMS;
+			free->free_item = HANDLE_TABLE_BLOCK_ITEMS;
 		}
-		if (free.free_item == 0) continue;
+		if (free->free_item == 0) continue;
 
 		/* 查找空闲句柄 */
-		int id = bmp_search(free.bmp_base,free.bmp_size);
+		int id = bmp_search(free->bmp_base,free->bmp_size);
 		if (id == -1)
 		{
 			return 0;
 		}
 		else
 		{
-			free.free_item--;
+			free->free_item--;
 			return (u32)id;
 		}
 	}

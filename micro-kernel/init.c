@@ -14,14 +14,16 @@
 #include "arch/include/table.h"
 
 
-PageTable page_dir;
 
+PageTable g_page_dir;
 /*
  * 初始化分页
  * 建立对等映射
  */
 void page_init()
 {
+	PageTable* page_dir = 0x80000;//&g_page_dir;
+
 	/* 页表大小 */
 	int page_table_size = B_TO_NEED_TABLE(mem_size);
 	void* base = alloc(page_table_size);
@@ -31,8 +33,8 @@ void page_init()
 	{
 		u32 page_tbl = ((u32)base)+(i*PAGE_SIZE);
 
-		page_dir.items[i].p = 1;				// pde项P位设置为1
-		page_link_table(&page_dir,page_tbl,i);	// pde项addr设置为页表地址
+		page_dir->items[i].p = 1;				// pde项P位设置为1
+		page_link_table(page_dir,page_tbl,i);	// pde项addr设置为页表地址
 
 		/* 内层循环，循环建立物理地址与页表的链接 */
 		for(int j=0;j<1024;j++)
@@ -41,9 +43,8 @@ void page_init()
 			page_link_addr(page_tbl,(i*MAX_PAGE_ENTRY+j)*PAGE_SIZE,j);	// pte项addr设置为物理页框地址
 		}
 	}
-
 	/* 加载 */
-	page_directory_load((u32)(&page_dir));
+	page_directory_load((u32)(page_dir));
 }
 
 

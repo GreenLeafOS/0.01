@@ -68,20 +68,20 @@ void post(MsgHead msg)
 MsgHead recv()
 {
 	KernelLock();
-		int priority = 10;
+		int priority = 10;	// -12
 		int id;
-		Bool empty = False;
+		Bool empty = True;	// -20
 		/* 循环等待接收消息 */
-		for(int i=0;i<THREAD_NR_MSGQUEUE/32;i++)
+		for(int i=0;i<THREAD_NR_MSGQUEUE/32;i++)	// -24
 		{
-			empty = (thread_run->thread_info.msg_queue_bmp[i] == 0);
+			empty = empty && (thread_run->thread_info.msg_queue_bmp[i] == 0);
 		}
 		if (empty)
 		{
 			thread_run->thread_info.state = THREAD_STATE_RECVING;
+			KernelUnlock();
 			wait();
 		}
-
 		/* 选择优先级最高的消息 */
 		for(int i=0;i<THREAD_NR_MSGQUEUE;i++)
 		{

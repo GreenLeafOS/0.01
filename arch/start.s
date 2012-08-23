@@ -27,6 +27,6 @@ _start:
 	call	tss_init
 
 	call	buddy_init
-#	call	page_init
+	call	page_init
 
 	jmp		kernel_main

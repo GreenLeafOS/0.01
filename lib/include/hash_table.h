@@ -30,6 +30,7 @@ typedef struct {
 extern int hash_create(hash_info* info, char* ptr, size_t nbyte, size_t size, hash_f hash_fun);
 extern int hash_set(hash_info* info, u32 key, void* value);
 extern int hash_get(hash_info* info, u32 key, void* value);
+extern void* hash_getaddr(hash_info* info, u32 key);
 extern int hash_del(hash_info* info, u32 key);
 
 

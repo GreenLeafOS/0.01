@@ -127,10 +127,10 @@ void mod_time_main()
 	post(msg_reg);
 
 	/* ³õÊ¼»¯8253 */
-	outb(TIMER_MODE,RATE_GENERATOR);
+/*	outb(TIMER_MODE,RATE_GENERATOR);
 	outb(TIMER0, (u8)(TIMER_FREQ/HZ));
 	outb(TIMER0, (u8)((TIMER_FREQ/HZ) >> 8));
-
+*/
 	mod_time_show();
 	while(1)
 	{

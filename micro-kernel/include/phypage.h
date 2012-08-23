@@ -70,10 +70,10 @@ Bool	page_is_buddy(PhyPage *page, int order);
 
 
 #define OrderToPages(order,pages)	\
-	while((1 << order) >= pages) pages*=2
+	while((1 << order) > pages) pages*=2
 
 #define PagesToOrder(pages,order)	\
-	while((1 << order) <= pages) order++
+	while((1 << order) < pages) order++
 
 
 

@@ -15,8 +15,13 @@
 
 
 /* addr_room data */
-id_t mod_addr_room_id;
+id_t 			mod_addr_room_id;
 
+hash_info 		mod_addr_room_hash;
+hash_info 		mod_addr_block_hash;
+
+LinearRoom		mod_addr_room_base[256];
+LinearBlock		mod_addr_block_base[1024];
 
 
 /*
@@ -32,7 +37,7 @@ Handle mod_addr_room_create()
 	room.free_count = UserLinearSpacePages;
 	room.table = (PageTable*)alloc(0);
 
-	// 以ret为句柄，存入room
+	hash_set(&mod_addr_room_hash,ret,&room);
 
 	return ret;
 }
@@ -49,7 +54,7 @@ Handle mod_addr_room_alloc()
 	Handle ret = new();
 	LinearBlock block;
 
-	// 以ret为句柄，存入block
+	hash_set(&mod_addr_block_hash,ret,&block);
 
 	return ret;
 }
@@ -66,10 +71,12 @@ Bool mod_addr_room_add(Handle addr_room,Handle linear_block)
 	int i=0,pages=0;
 
 	LinearBlock *other;
-	// 获取linear_block的实例
-	LinearBlock *block;
-	// 获取addr_room的实例
-	LinearRoom *room;
+
+	/* 获取linear_block的指针 */
+	LinearBlock *block = (LinearBlock*)hash_getaddr(&mod_addr_block_hash,linear_block);
+
+	/* 获取addr_room的指针 */
+	LinearRoom *room = (LinearRoom*)hash_getaddr(&mod_addr_room_hash,addr_room);
 
 	/* 新块的起始和结束 */
 	int start = block->start;
@@ -110,10 +117,11 @@ Bool mod_addr_room_add(Handle addr_room,Handle linear_block)
  */
 void mod_addr_room_del(Handle addr_room,Handle linear_block)
 {
-	// 获取linear_block的实例
-	LinearBlock *block;
-	// 获取addr_room的实例
-	LinearRoom *room;
+	/* 获取linear_block的指针 */
+	LinearBlock *block = (LinearBlock*)hash_getaddr(&mod_addr_block_hash,linear_block);
+
+	/* 获取addr_room的指针 */
+	LinearRoom *room = (LinearRoom*)hash_getaddr(&mod_addr_room_hash,addr_room);
 
 	list_unlink(&block->block->node);
 }
@@ -128,9 +136,10 @@ void mod_addr_room_del(Handle addr_room,Handle linear_block)
  */
 void mod_addr_room_switch(Handle addr_room)
 {
-	// 获取addr_room的实例
-	LinearRoom	*room;
-	LinearBlock	*block;
+	LinearBlock *block;
+
+	/* 获取addr_room的指针 */
+	LinearRoom *room = (LinearRoom*)hash_getaddr(&mod_addr_room_hash,addr_room);
 
 
 	/* 只要获得的指针不为NULL，循环搜索块 */
@@ -180,6 +189,9 @@ void mod_addr_room_switch(Handle addr_room)
  */
 void mod_addr_room_do(MsgHead msg)
 {
+	char *ch = "do\n";
+	print(ch);
+
 	switch(msg.vector)
 	{
 		/* 创建资源 */
@@ -259,6 +271,8 @@ void mod_addr_room_main()
 {
 	char* str = "linear address space.\n";
 	print(str);
+	hash_create(&mod_addr_room_hash,(char*)&mod_addr_room_base,256*sizeof(LinearRoom),sizeof(LinearRoom),NULL);
+	hash_create(&mod_addr_block_hash,(char*)&mod_addr_block_base,256*sizeof(LinearBlock),sizeof(LinearBlock),NULL);
 	while(1)
 	{
 		MsgHead msg = recv();		/* 获取消息 */

@@ -208,7 +208,7 @@ Bool page_is_buddy(PhyPage *page, int order)
 void* alloc(u32 size)
 {
 	int order = 0;
-	while((1 << order) <= size) order++;
+	PagesToOrder(size,order);
 	return (void*)Page_To_Addr(page_alloc(order));
 }
 
