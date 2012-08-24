@@ -54,7 +54,7 @@ Handle mod_addr_room_alloc(LinearBlock *block)
 	Handle ret = new();
 	LinearBlock new_block;
 	if(block != NULL) new_block = *block;
-	hash_set(&mod_addr_block_hash,ret,&block);
+	hash_set(&mod_addr_block_hash,ret,&new_block);
 
 	return ret;
 }
@@ -99,7 +99,7 @@ Bool mod_addr_room_add(Handle addr_room,Handle linear_block)
 	}
 
 	/* 没有返回，则直接插入双向链表 */
-	list_add(&room->head,&block->block->node);
+	list_add(&room->head,&block->node);
 
 	/* 空闲数减小 */
 	OrderToPages(block->block->private,pages);
@@ -123,7 +123,7 @@ void mod_addr_room_del(Handle addr_room,Handle linear_block)
 	/* 获取addr_room的指针 */
 	LinearRoom *room = (LinearRoom*)hash_getaddr(&mod_addr_room_hash,addr_room);
 
-	list_unlink(&block->block->node);
+	list_unlink(&block->node);
 }
 
 
@@ -136,50 +136,57 @@ void mod_addr_room_del(Handle addr_room,Handle linear_block)
  */
 void mod_addr_room_switch(Handle addr_room)
 {
-	LinearBlock *block;
-
+	LinearBlock *block;		// -32
 	/* 获取addr_room的指针 */
-	LinearRoom *room = (LinearRoom*)hash_getaddr(&mod_addr_room_hash,addr_room);
+	LinearRoom *room = (LinearRoom*)hash_getaddr(&mod_addr_room_hash,addr_room);	// -28
 
 
 	/* 只要获得的指针不为NULL，循环搜索块 */
-	int i=0;
-	while(block = (LinearBlock*)list_search(&room->head,i))
+	int i=0;	// -12
+	while(block = (LinearBlock*)list_search(&room->head,i++))
 	{
 		/* 如果块没有映射过 */
 		if (!(bmp_test(&block->flags,LB_USED)))
 		{
-			for(int j=block->start;j<block->start + block->block->private;j++)
+			int max = 1;		// -16
+			OrderToPages(block->block->private,max);
+			for(int j=0;j<max;j++)								// -20
 			{
-				u32 page_index = (block->start + j) & 0x3FF;	/* 取得页号，高位屏蔽 */
-				__asm(".global end\nend:\n");
+				u32 page_index = (block->start + j) & 0x3FF;	/* 取得页号，高位屏蔽 */					// -36
 				/* 页目录项下标等于起始页号除以一个项可以映射的页数 */
-				PageEntry *pde = (PageEntry*)&room->table->items[page_index/1024];
-				PageTable *tbl;
-				PageEntry *pte;
+				PageEntry *pde = (PageEntry*)&room->table->items[page_index/1024];	// -40
+				PageTable *tbl = (PageTable*)Index_To_Addr(pde->addr);				// -24
+				PageEntry *pte;	// -36
 
 				/* 如果页表没有分配 */
 				if (pde->avl != PDE_ALLOCATED)
 				{
 					/* 就马上分配一个页 */
-					pde->addr = (u32)alloc(0);
+					tbl = alloc(0);
+					pde->avl = PDE_ALLOCATED;
+					pde->addr = Addr_To_Index(tbl);
+					pde->p = 1;
 				}
-				tbl = (PageTable*)((u32)pde->addr);
 
 				/* 页表项的下标等于起始页号除以一个项可以映射的页数的余数 */
 				pte = (PageEntry*)&tbl->items[page_index%1024];
 
 				/* 映射 */
-				pte->addr = (u32)page_index;
+				u32 phy = Page_To_Index(block->block + j);	// -44
+				pte->addr = phy;
 				pte->p = 1;
 				pte->avl = PDE_ALLOCATED;
 			}
 		}
-		i++;
+		bmp_clear(&block->flags,LB_USED);
 	}
-
-//	__asm(".global end\nend:\n");
-	page_directory_load((u32)&room->table);	/* 加载页表 */
+	/* 加载页表 */
+	__asm volatile(
+			"movl	%0,%%eax		\n"
+			"movl	%%eax,%%cr3		\n"
+			"movl	%%cr0,%%eax		\n"
+			: : "g"(room->table)
+			);
 }
 
 

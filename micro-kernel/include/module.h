@@ -46,8 +46,9 @@ typedef struct linear_room
 
 typedef struct linear_block
 {
-	u32 	flags;			// 线性空间块状态、类型
-	u32		start;			// 映射到的线性地址空间的起始页
+	ListNode	node;
+	u32 		flags;		// 线性空间块状态、类型
+	u32			start;		// 映射到的线性地址空间的起始页
 	LinearRoom	*room;		// 映射到的线性地址空间指针
 	PhyPage		*block;		// 物理页块描述符指针
 }LinearBlock;
@@ -59,6 +60,16 @@ typedef struct linear_block
 
 void mod_addr_room_main();
 id_t mod_addr_room_id;
+
+
+
+
+/* mod_hd.c */
+void mod_hd_main();
+id_t mod_hd_id;
+
+
+
 
 
 #endif /* MODULE_H_ */

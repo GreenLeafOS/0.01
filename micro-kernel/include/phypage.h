@@ -23,7 +23,6 @@ typedef struct phy_page
 /* PhyPage.flags bit */
 #define	PG_BUSY			0	/* 块正在使用,起始页有效 */
 
-
 /* free_area */
 struct free_area
 {

@@ -14,6 +14,8 @@
 u32* kernel_stack_top;
 int kernel_reenter;
 
+
+
 /*
  * ÄÚºËÖ÷º¯Êý
  */
@@ -95,13 +97,17 @@ void test_main()
 
 
 	LinearBlock block;
-	block.start = 20;
+	block.start = 0;
 
 	block.block = (PhyPage*)Addr_To_Page(alloc(45));
-	block.block = page_alloc(4);
-	body1.ret = &handle_block;
+//	block.block = page_alloc(4);
+	u8 *ch = (u8*)Page_To_Addr(block.block);
+	*ch = 'a';
+
 	body1.type = 1;
-	body1.init ;
+	body1.ret = &handle_block;
+	body1.init = &block;
+
 	post(msg);
 	recv();
 
@@ -127,11 +133,8 @@ void test_main()
 	msg.body_point = &body3;
 	msg.body_size = sizeof(body3);
 
-	post(msg);
+//	post(msg);
 	recv();
-	char *st = "ok\n";
-	print(st);
-
 
 	while(1);
 }

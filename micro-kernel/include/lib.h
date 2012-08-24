@@ -25,5 +25,6 @@
 #include <arch/include/print.h>
 #include <arch/include/cmos.h>
 #include <arch/include/page.h>
+#include <arch/include/8259A.h>
 
 #endif /* LIB_H_ */

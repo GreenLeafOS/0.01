@@ -21,6 +21,8 @@
 #define INT_VECTOR_IRQ8		0x28
 
 
-void init_8259A();
+void 	init_8259A();
+void	enable_irq(int irq);
+void	disable_irq(int irq);
 
 #endif /* 8259A_H_ */
